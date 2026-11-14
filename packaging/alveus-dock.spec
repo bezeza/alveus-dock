@@ -1,5 +1,5 @@
 Name:           alveus-dock
-Version:        0.1.2
+Version:        0.1.3
 Release:        1%{?dist}
 Summary:        Lightweight animated application dock for KDE Plasma 6
 
@@ -35,7 +35,7 @@ cp -a package/. %{buildroot}%{_datadir}/plasma/plasmoids/org.bezeza.alveusdock/
 %{_datadir}/plasma/plasmoids/org.bezeza.alveusdock
 
 %changelog
-* Sat Nov 14 2026 Alveus Dock contributors - 0.1.2-1
-- Align package metadata with GPL-3.0-only
-- Fix source archive naming and RPM build preparation
-- Add diagnostics, roadmap and project documentation
+* Sat Nov 14 2026 Alveus Dock contributors - 0.1.3-1
+- Stabilize task reordering and launcher synchronization
+- Reset recycled delegate animation state
+- Tighten diagnostics privacy and QML linting

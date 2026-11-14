@@ -3,6 +3,8 @@
  * Alveus Dock — a small KDE Plasma task dock.
  */
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls as Controls
 import QtQuick.Layouts
@@ -32,8 +34,11 @@ PlasmoidItem {
     }
 
     function logError(eventName, error) {
-        const message = error && error.message ? error.message : String(error);
-        console.error("[AlveusDock][ERROR]", eventName, message);
+        // Exception messages can contain paths or other user data.
+        const errorType = error && error.name ? String(error.name) : "Error";
+        console.error("[AlveusDock][ERROR]", eventName, JSON.stringify({
+            type: errorType
+        }));
     }
 
     function runAction(actionName, callback) {
@@ -42,7 +47,8 @@ PlasmoidItem {
             if (result === false) {
                 logWarning("action-rejected", { name: actionName });
             } else {
-                logInfo("action", { name: actionName });
+                // This records dispatch, not confirmation of window-manager completion.
+                logInfo("action-dispatched", { name: actionName });
             }
             return result;
         } catch (error) {
@@ -145,7 +151,7 @@ PlasmoidItem {
 
     Component.onCompleted: {
         root.logInfo("applet-started", {
-            version: "0.1.2",
+            version: "0.1.3",
             iconSize: root.iconSize,
             vertical: root.vertical
         });
@@ -208,6 +214,25 @@ PlasmoidItem {
             onDemandingAttentionChanged: {
                 if (demandingAttention && Plasmoid.configuration.enableAttentionReaction) {
                     root.logInfo("attention-requested", { dockIndex: dockIndex });
+                    attentionReaction.restart();
+                }
+            }
+
+            // ListView can recycle delegates. Reset transient visual state so an
+            // icon never inherits another application's hover or animation state.
+            ListView.onPooled: {
+                delegateRoot.hovered = false;
+                delegateRoot.launchScale = 1.0;
+                launchBounce.stop();
+                launchPulse.stop();
+                attentionReaction.stop();
+            }
+
+            ListView.onReused: {
+                delegateRoot.hovered = false;
+                delegateRoot.launchScale = 1.0;
+                if (delegateRoot.demandingAttention
+                        && Plasmoid.configuration.enableAttentionReaction) {
                     attentionReaction.restart();
                 }
             }
@@ -496,22 +521,52 @@ PlasmoidItem {
             const pointInList = mapToItem(dockList, drop.x, drop.y);
             const targetIndex = dockList.indexAt(pointInList.x, pointInList.y);
 
-            // Internal drag: reorder the source task to the row under the pointer.
+            // Internal drag: validate indices, move the task and synchronize
+            // the launchers so their persisted order matches the visible order.
             if (drop.source && drop.source.dockIndex !== undefined) {
                 const sourceIndex = Number(drop.source.dockIndex);
-                if (targetIndex >= 0 && sourceIndex !== targetIndex) {
-                    const moved = root.runAction(
-                        "reorder-task",
-                        () => taskModel.move(sourceIndex, targetIndex)
-                    );
-                    if (moved !== true) {
-                        root.logWarning("reorder-rejected", {
-                            sourceIndex: sourceIndex,
-                            targetIndex: targetIndex
-                        });
-                    }
+
+                if (!Plasmoid.configuration.enableDragReorder) {
+                    root.logWarning("reorder-disabled", {});
+                    return;
                 }
-                drop.acceptProposedAction();
+
+                if (!Number.isInteger(sourceIndex)
+                        || sourceIndex < 0
+                        || sourceIndex >= taskModel.count
+                        || targetIndex < 0
+                        || targetIndex >= taskModel.count) {
+                    root.logWarning("reorder-invalid-index", {
+                        sourceIndex: sourceIndex,
+                        targetIndex: targetIndex,
+                        taskCount: taskModel.count
+                    });
+                    return;
+                }
+
+                if (sourceIndex === targetIndex) {
+                    drop.acceptProposedAction();
+                    return;
+                }
+
+                const moved = root.runAction(
+                    "reorder-task",
+                    () => taskModel.move(sourceIndex, targetIndex)
+                );
+
+                if (moved === true) {
+                    root.runAction("sync-launchers", () => taskModel.syncLaunchers());
+                    root.logInfo("task-reordered", {
+                        sourceIndex: sourceIndex,
+                        targetIndex: targetIndex
+                    });
+                    drop.acceptProposedAction();
+                } else {
+                    root.logWarning("reorder-rejected", {
+                        sourceIndex: sourceIndex,
+                        targetIndex: targetIndex
+                    });
+                }
                 return;
             }
 

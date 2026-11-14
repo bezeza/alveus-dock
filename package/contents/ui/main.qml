@@ -8,6 +8,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls as Controls
 import QtQuick.Layouts
+import QtQml.Models
 
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.core as PlasmaCore
@@ -22,6 +23,22 @@ PlasmoidItem {
     readonly property int itemExtent: iconSize + 12
     readonly property int dockPadding: 6
     readonly property real hoverScale: Plasmoid.configuration.hoverScale / 100.0
+    readonly property int dockLayoutMode: Plasmoid.configuration.dockLayoutMode
+    readonly property int layerSpacing: Plasmoid.configuration.layerSpacing
+    readonly property bool splitLayoutEnabled: dockLayoutMode !== 0
+    readonly property bool showRunningLayer: dockLayoutMode === 1
+        || (dockLayoutMode === 2 && runningTasksVisualModel.count > 0)
+    readonly property int visibleItemsPerLayer: splitLayoutEnabled
+        ? Math.max(quickAccessVisualModel.count, showRunningLayer ? runningTasksVisualModel.count : 0)
+        : taskModel.count
+    readonly property int panelLength: Math.max(
+        itemExtent,
+        visibleItemsPerLayer * itemExtent
+            + Math.max(0, visibleItemsPerLayer - 1) * Plasmoid.configuration.iconSpacing
+            + dockPadding * 2
+    )
+    readonly property int panelThickness: itemExtent * (showRunningLayer ? 2 : 1)
+        + (showRunningLayer ? layerSpacing : 0) + dockPadding * 2
 
     signal iconGeometryRefreshRequested()
 
@@ -43,7 +60,7 @@ PlasmoidItem {
         }
 
         groupVisualParent = delegateItem;
-        groupParentIndex = delegateItem.index;
+        groupParentIndex = delegateItem.sourceIndex;
         groupTitle = String(delegateItem.model.display || "");
         groupWindowChooser.visible = true;
     }
@@ -85,22 +102,11 @@ PlasmoidItem {
     Plasmoid.backgroundHints: PlasmaCore.Types.NoBackground
     Plasmoid.constraintHints: Plasmoid.CanFillArea
 
-    Layout.minimumWidth: vertical ? itemExtent + dockPadding * 2 : itemExtent
-    Layout.minimumHeight: vertical ? itemExtent : itemExtent + dockPadding * 2
+    Layout.minimumWidth: vertical ? panelThickness : itemExtent + dockPadding * 2
+    Layout.minimumHeight: vertical ? itemExtent + dockPadding * 2 : panelThickness
 
-    Layout.preferredWidth: vertical
-        ? itemExtent + dockPadding * 2
-        : Math.max(itemExtent + dockPadding * 2,
-                   taskModel.count * itemExtent
-                   + Math.max(0, taskModel.count - 1) * Plasmoid.configuration.iconSpacing
-                   + dockPadding * 2)
-
-    Layout.preferredHeight: vertical
-        ? Math.max(itemExtent + dockPadding * 2,
-                   taskModel.count * itemExtent
-                   + Math.max(0, taskModel.count - 1) * Plasmoid.configuration.iconSpacing
-                   + dockPadding * 2)
-        : itemExtent + dockPadding * 2
+    Layout.preferredWidth: vertical ? panelThickness : panelLength
+    Layout.preferredHeight: vertical ? panelLength : panelThickness
 
     function isApplicationLauncher(url) {
         const value = url.toString().toLowerCase();
@@ -124,6 +130,63 @@ PlasmoidItem {
 
     function publishAllDelegateGeometries() {
         iconGeometryRefreshRequested();
+    }
+
+    function updateVisualGroup(visualModel, row, groupName, shouldBelong) {
+        const item = visualModel.items.get(row);
+        const groups = item && item.groups ? item.groups : [];
+        const alreadyBelongs = groups.indexOf(groupName) !== -1;
+
+        if (shouldBelong && !alreadyBelongs) {
+            visualModel.items.addGroups(row, 1, [groupName]);
+        } else if (!shouldBelong && alreadyBelongs) {
+            visualModel.items.removeGroups(row, 1, [groupName]);
+        }
+    }
+
+    // Split the native TaskManager model into two presentation groups. KDE
+    // remains the only source of launcher and window data; no second registry
+    // or background polling is introduced.
+    function syncTaskVisualGroups() {
+        if (!splitLayoutEnabled) {
+            return;
+        }
+
+        const count = taskModel.count;
+        if (quickAccessVisualModel.items.count !== count
+                || runningTasksVisualModel.items.count !== count) {
+            logWarning("visual-model-sync-pending", {
+                taskCount: count,
+                quickItems: quickAccessVisualModel.items.count,
+                runningItems: runningTasksVisualModel.items.count
+            });
+            return;
+        }
+
+        for (let row = 0; row < count; ++row) {
+            const sourceIndex = taskModel.makeModelIndex(row);
+            const isLauncher = !!taskModel.data(
+                sourceIndex,
+                TaskManager.AbstractTasksModel.IsLauncher
+            );
+            const isRunning = !!taskModel.data(
+                sourceIndex,
+                TaskManager.AbstractTasksModel.IsWindow
+            ) || !!taskModel.data(
+                sourceIndex,
+                TaskManager.AbstractTasksModel.IsGroupParent
+            ) || !!taskModel.data(
+                sourceIndex,
+                TaskManager.AbstractTasksModel.IsStartup
+            );
+
+            updateVisualGroup(quickAccessVisualModel, row, "quickAccess", isLauncher);
+            updateVisualGroup(runningTasksVisualModel, row, "runningTasks", isRunning);
+        }
+    }
+
+    function scheduleTaskVisualGroups() {
+        Qt.callLater(root.syncTaskVisualGroups);
     }
 
     function addDroppedLaunchers(urls) {
@@ -187,24 +250,87 @@ PlasmoidItem {
             ? TaskManager.TasksModel.GroupApplications
             : TaskManager.TasksModel.GroupDisabled
         sortMode: TaskManager.TasksModel.SortManual
-        separateLaunchers: false
-        launchInPlace: true
+        separateLaunchers: root.splitLayoutEnabled
+        launchInPlace: !root.splitLayoutEnabled
         hideActivatedLaunchers: false
         taskReorderingEnabled: Plasmoid.configuration.enableDragReorder
 
         onCountChanged: {
             root.logInfo("task-count-changed", { count: count });
             iconGeometryTimer.restart();
+            root.scheduleTaskVisualGroups();
         }
 
         onLauncherListChanged: {
             Plasmoid.configuration.launchers = launcherList;
             root.logInfo("launcher-list-changed", { count: launcherList.length });
+            root.scheduleTaskVisualGroups();
         }
 
         Component.onCompleted: {
             launcherList = Plasmoid.configuration.launchers;
             root.logInfo("task-model-ready", { taskCount: count });
+            root.scheduleTaskVisualGroups();
+        }
+    }
+
+    DelegateModel {
+        id: quickAccessVisualModel
+
+        model: taskModel
+        filterOnGroup: "quickAccess"
+        groups: [
+            DelegateModelGroup {
+                name: "quickAccess"
+                includeByDefault: false
+            }
+        ]
+
+        delegate: TaskDelegate {
+            dockRoot: root
+            taskModel: taskModel
+            sourceIndex: DelegateModel.itemsIndex
+            allowReorder: true
+        }
+    }
+
+    DelegateModel {
+        id: runningTasksVisualModel
+
+        model: taskModel
+        filterOnGroup: "runningTasks"
+        groups: [
+            DelegateModelGroup {
+                name: "runningTasks"
+                includeByDefault: false
+            }
+        ]
+
+        delegate: TaskDelegate {
+            dockRoot: root
+            taskModel: taskModel
+            sourceIndex: DelegateModel.itemsIndex
+            allowReorder: false
+        }
+    }
+
+    Connections {
+        target: taskModel
+
+        function onRowsInserted() {
+            root.scheduleTaskVisualGroups();
+        }
+
+        function onRowsRemoved() {
+            root.scheduleTaskVisualGroups();
+        }
+
+        function onModelReset() {
+            root.scheduleTaskVisualGroups();
+        }
+
+        function onDataChanged() {
+            root.scheduleTaskVisualGroups();
         }
     }
 
@@ -266,6 +392,12 @@ PlasmoidItem {
 
         function onLaunchersChanged() {
             taskModel.launcherList = Plasmoid.configuration.launchers;
+            root.scheduleTaskVisualGroups();
+        }
+
+        function onDockLayoutModeChanged() {
+            root.scheduleTaskVisualGroups();
+            iconGeometryTimer.restart();
         }
     }
 
@@ -273,7 +405,7 @@ PlasmoidItem {
         id: dockSurface
 
         anchors.fill: parent
-        radius: height / 2
+        radius: Math.min(width, height) / 2
         color: Plasmoid.configuration.showBackground
             ? Qt.rgba(0.055, 0.070, 0.095, 0.84)
             : "transparent"
@@ -282,448 +414,72 @@ PlasmoidItem {
         antialiasing: true
     }
 
+    // Single mode preserves the original unified task row.
     ListView {
-        id: dockList
+        id: singleDockList
 
         anchors.fill: parent
         anchors.margins: root.dockPadding
         z: 1
         orientation: root.vertical ? ListView.Vertical : ListView.Horizontal
         spacing: Plasmoid.configuration.iconSpacing
-        model: taskModel
+        model: root.splitLayoutEnabled ? null : taskModel
+        visible: !root.splitLayoutEnabled
         clip: false
         interactive: false
         boundsBehavior: Flickable.StopAtBounds
         reuseItems: true
 
-        delegate: Item {
-            id: delegateRoot
-
-            required property int index
-            required property var model
-
-            readonly property int dockIndex: index
-            property real launchScale: 1.0
-            property bool hovered: false
-            property bool demandingAttention: !!model.IsDemandingAttention
-            readonly property int childCount: Number(model.ChildCount || 0)
-
-            Accessible.name: String(model.display || "")
-                + (model.IsGroupParent ? qsTr(", %1 windows").arg(childCount) : "")
-            Accessible.role: Accessible.Button
-
-            width: root.itemExtent
-            height: root.itemExtent
-            z: hovered ? 2 : 0
-
-            onDemandingAttentionChanged: {
-                if (demandingAttention && Plasmoid.configuration.enableAttentionReaction) {
-                    root.logInfo("attention-requested", { dockIndex: dockIndex });
-                    attentionReaction.restart();
-                }
-            }
-
-            // ListView can recycle delegates. Reset transient visual state so an
-            // icon never inherits another application's hover or animation state.
-            ListView.onPooled: {
-                delegateRoot.hovered = false;
-                delegateRoot.launchScale = 1.0;
-                launchBounce.stop();
-                launchPulse.stop();
-                attentionReaction.stop();
-                energyPulse.opacity = 0;
-                energyPulse.scale = 0.45;
-                attentionRing.opacity = 0;
-                attentionRing.scale = 0.8;
-                contextMenu.close();
-                if (root.groupVisualParent === delegateRoot) {
-                    root.closeGroupChooser();
-                }
-            }
-
-            ListView.onReused: {
-                delegateRoot.hovered = false;
-                delegateRoot.launchScale = 1.0;
-                if (delegateRoot.demandingAttention
-                        && Plasmoid.configuration.enableAttentionReaction) {
-                    attentionReaction.restart();
-                }
-                delegateRoot.scheduleIconGeometryPublish();
-            }
-
-            function modelIndex() {
-                return taskModel.makeModelIndex(index);
-            }
-
-            function publishIconGeometry() {
-                if (!delegateRoot.visible
-                        || !delegateRoot.model
-                        || (!delegateRoot.model.IsWindow && !delegateRoot.model.IsGroupParent)
-                        || delegateRoot.model.IsLauncher
-                        || delegateRoot.model.IsStartup) {
-                    return;
-                }
-
-                const geometry = root.globalRect(delegateRoot);
-                taskModel.requestPublishDelegateGeometry(
-                    delegateRoot.modelIndex(),
-                    geometry,
-                    delegateRoot
-                );
-            }
-
-            function scheduleIconGeometryPublish() {
-                Qt.callLater(publishIconGeometry);
-            }
-
-            Connections {
-                target: root
-
-                function onIconGeometryRefreshRequested() {
-                    delegateRoot.scheduleIconGeometryPublish();
-                }
-            }
-
-            onXChanged: scheduleIconGeometryPublish()
-            onYChanged: scheduleIconGeometryPublish()
-            onWidthChanged: scheduleIconGeometryPublish()
-            onHeightChanged: scheduleIconGeometryPublish()
-            onModelChanged: scheduleIconGeometryPublish()
-
-            Component.onCompleted: scheduleIconGeometryPublish()
-
-            function activateTask() {
-                const idx = modelIndex();
-
-                if (model.IsGroupParent) {
-                    root.toggleGroupChooser(delegateRoot);
-                    if (root.groupVisualParent === delegateRoot) {
-                        root.logInfo("window-chooser-opened", { childCount: childCount });
-                    }
-                    return;
-                }
-
-                if (model.IsWindow && model.IsActive) {
-                    // Refresh the target immediately before asking KWin to minimize.
-                    publishIconGeometry();
-                    root.runAction("toggle-minimized", () => taskModel.requestToggleMinimized(idx));
-                } else {
-                    root.runAction("activate-window", () => taskModel.requestActivate(idx));
-                }
-            }
-
-            onChildCountChanged: {
-                if (childCount < 2 && root.groupVisualParent === delegateRoot) {
-                    root.closeGroupChooser();
-                }
-            }
-
-            onModelChanged: {
-                if (root.groupVisualParent === delegateRoot) {
-                    root.closeGroupChooser();
-                }
-            }
-
-            onIndexChanged: {
-                if (root.groupVisualParent === delegateRoot) {
-                    root.groupParentIndex = index;
-                }
-            }
-
-            function playLaunchReaction() {
-                // Do not bounce when merely switching to an already-running window.
-                if (!(model.IsLauncher || model.IsStartup)) {
-                    return;
-                }
-
-                if (Plasmoid.configuration.enableLaunchBounce) {
-                    launchBounce.restart();
-                }
-                if (Plasmoid.configuration.showLaunchPulse) {
-                    launchPulse.restart();
-                }
-            }
-
-            Kirigami.Icon {
-                id: appIcon
-
-                anchors.centerIn: parent
-                width: root.iconSize
-                height: root.iconSize
-                source: delegateRoot.model.decoration
-                active: delegateRoot.hovered
-                enabled: true
-                scale: delegateRoot.launchScale
-                       * (delegateRoot.hovered ? root.hoverScale : 1.0)
-
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: 135
-                        easing.type: Easing.OutCubic
-                    }
-                }
-            }
-
-            // Count badge makes grouped windows visible without changing the icon.
-            Rectangle {
-                id: windowCountBadge
-
-                visible: !!delegateRoot.model.IsGroupParent && delegateRoot.childCount > 1
-                width: Math.max(17, badgeText.implicitWidth + 8)
-                height: 17
-                radius: height / 2
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
-                color: Kirigami.Theme.textColor
-                z: 4
-
-                Text {
-                    id: badgeText
-                    anchors.centerIn: parent
-                    text: delegateRoot.childCount
-                    color: Kirigami.Theme.backgroundColor
-                    font.pixelSize: 10
-                    font.bold: true
-                }
-            }
-
-            // A short energy ring, triggered only by a user action.
-            Rectangle {
-                id: energyPulse
-
-                anchors.centerIn: appIcon
-                width: root.iconSize * 0.68
-                height: width
-                radius: width / 2
-                color: "transparent"
-                border.width: 2
-                border.color: Kirigami.Theme.highlightColor
-                opacity: 0
-                scale: 0.45
-                visible: opacity > 0.01
-            }
-
-            // One finite attention reaction. No idle animation loop.
-            Rectangle {
-                id: attentionRing
-
-                anchors.centerIn: appIcon
-                width: root.iconSize * 0.9
-                height: width
-                radius: width / 2
-                color: "transparent"
-                border.width: 2
-                border.color: Kirigami.Theme.highlightColor
-                opacity: 0
-                scale: 0.8
-                visible: opacity > 0.01
-            }
-
-            SequentialAnimation {
-                id: launchBounce
-
-                NumberAnimation {
-                    target: delegateRoot
-                    property: "launchScale"
-                    to: 1.16
-                    duration: 95
-                    easing.type: Easing.OutCubic
-                }
-                NumberAnimation {
-                    target: delegateRoot
-                    property: "launchScale"
-                    to: 0.95
-                    duration: 65
-                    easing.type: Easing.InOutSine
-                }
-                NumberAnimation {
-                    target: delegateRoot
-                    property: "launchScale"
-                    to: 1.0
-                    duration: 145
-                    easing.type: Easing.OutBack
-                }
-            }
-
-            ParallelAnimation {
-                id: launchPulse
-
-                NumberAnimation {
-                    target: energyPulse
-                    property: "scale"
-                    from: 0.45
-                    to: 1.7
-                    duration: 270
-                    easing.type: Easing.OutCubic
-                }
-                NumberAnimation {
-                    target: energyPulse
-                    property: "opacity"
-                    from: 0.78
-                    to: 0
-                    duration: 270
-                    easing.type: Easing.OutCubic
-                }
-            }
-
-            SequentialAnimation {
-                id: attentionReaction
-                loops: 2
-
-                ParallelAnimation {
-                    NumberAnimation {
-                        target: attentionRing
-                        property: "scale"
-                        from: 0.8
-                        to: 1.45
-                        duration: 230
-                        easing.type: Easing.OutCubic
-                    }
-                    NumberAnimation {
-                        target: attentionRing
-                        property: "opacity"
-                        from: 0.72
-                        to: 0
-                        duration: 230
-                        easing.type: Easing.OutCubic
-                    }
-                }
-                PauseAnimation {
-                    duration: 85
-                }
-            }
-
-            Controls.BusyIndicator {
-                anchors.centerIn: appIcon
-                width: root.iconSize * 0.58
-                height: width
-                running: !!delegateRoot.model.IsStartup
-                visible: running
-            }
-
-            // Active-window marker.
-            Rectangle {
-                id: activeIndicator
-
-                width: root.vertical ? 3 : 18
-                height: root.vertical ? 18 : 3
-                x: root.vertical ? parent.width - width - 1 : (parent.width - width) / 2
-                y: root.vertical ? (parent.height - height) / 2 : parent.height - height - 1
-                radius: 2
-                color: Kirigami.Theme.highlightColor
-                opacity: Plasmoid.configuration.showActiveIndicator
-                         && delegateRoot.model.IsActive ? 1 : 0
-
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 150
-                        easing.type: Easing.OutCubic
-                    }
-                }
-            }
-
-            // Drag an icon onto another icon to reorder it.
-            DragHandler {
-                id: dragHandler
-                target: null
-                acceptedButtons: Qt.LeftButton
-                enabled: Plasmoid.configuration.enableDragReorder
-            }
-
-            Drag.active: dragHandler.active
-            Drag.source: delegateRoot
-            Drag.dragType: Drag.Automatic
-            Drag.supportedActions: Qt.MoveAction
-            Drag.mimeData: ({
-                "application/x-alveus-dock-index": String(delegateRoot.dockIndex)
-            })
-
-            MouseArea {
-                id: mouseArea
-
-                anchors.fill: parent
-                hoverEnabled: true
-                acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
-
-                onEntered: delegateRoot.hovered = true
-                onExited: delegateRoot.hovered = false
-
-                onClicked: mouse => {
-                    if (mouse.button === Qt.LeftButton) {
-                        delegateRoot.playLaunchReaction();
-                        delegateRoot.activateTask();
-                    } else if (mouse.button === Qt.MiddleButton) {
-                        root.runAction("new-instance",
-                                       () => taskModel.requestNewInstance(delegateRoot.modelIndex()));
-                    } else if (mouse.button === Qt.RightButton) {
-                        contextMenu.popup();
-                    }
-                }
-
-                Controls.ToolTip.visible: containsMouse
-                Controls.ToolTip.text: delegateRoot.model.IsGroupParent
-                    ? qsTr("%1 windows").arg(delegateRoot.model.display)
-                    : delegateRoot.model.display
-                Controls.ToolTip.delay: 450
-            }
-
-            Controls.Menu {
-                id: contextMenu
-
-                Controls.MenuItem {
-                    text: delegateRoot.model.HasLauncher
-                        ? qsTr("Unpin from Dock")
-                        : qsTr("Pin to Dock")
-
-                    enabled: delegateRoot.model.LauncherUrlWithoutIcon !== undefined
-                             && delegateRoot.model.LauncherUrlWithoutIcon !== null
-
-                    onTriggered: {
-                        const launcherUrl = delegateRoot.model.LauncherUrlWithoutIcon;
-                        if (delegateRoot.model.HasLauncher) {
-                            root.runAction("unpin-launcher",
-                                           () => taskModel.requestRemoveLauncher(launcherUrl));
-                        } else {
-                            root.runAction("pin-launcher",
-                                           () => taskModel.requestAddLauncher(launcherUrl));
-                        }
-                    }
-                }
-
-                Controls.MenuItem {
-                    text: qsTr("New instance")
-                    enabled: delegateRoot.model.CanLaunchNewInstance
-                    onTriggered: root.runAction(
-                        "new-instance",
-                        () => taskModel.requestNewInstance(delegateRoot.modelIndex())
-                    )
-                }
-
-                Controls.MenuItem {
-                    text: qsTr("Ungroup windows")
-                    visible: !!delegateRoot.model.IsGroupParent
-                    onTriggered: root.runAction(
-                        "ungroup-windows",
-                        () => taskModel.requestToggleGrouping(delegateRoot.modelIndex())
-                    )
-                }
-
-                Controls.MenuSeparator {}
-
-                Controls.MenuItem {
-                    text: qsTr("Close")
-                    visible: delegateRoot.model.IsWindow
-                    onTriggered: root.runAction(
-                        "close-window",
-                        () => taskModel.requestClose(delegateRoot.modelIndex())
-                    )
-                }
-            }
+        delegate: TaskDelegate {
+            dockRoot: root
+            taskModel: taskModel
+            sourceIndex: index
+            allowReorder: true
         }
     }
 
-    // One overlay handles internal reordering and external drops consistently.
-    // It does not participate in ordinary mouse clicks.
+    // The same native KDE model is presented as pinned launchers and live windows.
+    ListView {
+        id: quickAccessList
+
+        x: root.dockPadding
+        y: root.dockPadding
+        width: root.vertical ? root.itemExtent : Math.max(0, parent.width - root.dockPadding * 2)
+        height: root.vertical ? Math.max(0, parent.height - root.dockPadding * 2) : root.itemExtent
+        z: 1
+        orientation: root.vertical ? ListView.Vertical : ListView.Horizontal
+        spacing: Plasmoid.configuration.iconSpacing
+        model: root.splitLayoutEnabled ? quickAccessVisualModel : null
+        visible: root.splitLayoutEnabled
+        clip: false
+        interactive: false
+        boundsBehavior: Flickable.StopAtBounds
+        reuseItems: true
+    }
+
+    ListView {
+        id: runningTasksList
+
+        x: root.vertical
+            ? root.dockPadding + root.itemExtent + root.layerSpacing
+            : root.dockPadding
+        y: root.vertical
+            ? root.dockPadding
+            : root.dockPadding + root.itemExtent + root.layerSpacing
+        width: root.vertical ? root.itemExtent : Math.max(0, parent.width - root.dockPadding * 2)
+        height: root.vertical ? Math.max(0, parent.height - root.dockPadding * 2) : root.itemExtent
+        z: 1
+        orientation: root.vertical ? ListView.Vertical : ListView.Horizontal
+        spacing: Plasmoid.configuration.iconSpacing
+        model: root.showRunningLayer ? runningTasksVisualModel : null
+        visible: root.showRunningLayer
+        clip: false
+        interactive: false
+        boundsBehavior: Flickable.StopAtBounds
+        reuseItems: true
+    }
+
+    // One overlay handles launcher pinning, launcher reordering and file drops.
     DropArea {
         id: dockDropArea
 
@@ -731,15 +487,18 @@ PlasmoidItem {
         z: 3
 
         onDropped: drop => {
-            const pointInList = mapToItem(dockList, drop.x, drop.y);
-            const targetIndex = dockList.indexAt(pointInList.x, pointInList.y);
+            const reorderList = root.splitLayoutEnabled ? quickAccessList : singleDockList;
+            const reorderPoint = mapToItem(reorderList, drop.x, drop.y);
+            const reorderViewIndex = reorderList.indexAt(reorderPoint.x, reorderPoint.y);
+            const reorderDelegate = reorderViewIndex >= 0
+                ? reorderList.itemAtIndex(reorderViewIndex) : null;
+            const reorderTargetIndex = reorderDelegate ? reorderDelegate.sourceIndex : -1;
 
-            // Internal drag: validate indices, move the task and synchronize
-            // the launchers so their persisted order matches the visible order.
+            // Internal drag is restricted to the quick-access layer in split mode.
             if (drop.source && drop.source.dockIndex !== undefined) {
                 const sourceIndex = Number(drop.source.dockIndex);
 
-                if (!Plasmoid.configuration.enableDragReorder) {
+                if (!Plasmoid.configuration.enableDragReorder || !drop.source.allowReorder) {
                     root.logWarning("reorder-disabled", {});
                     return;
                 }
@@ -747,49 +506,74 @@ PlasmoidItem {
                 if (!Number.isInteger(sourceIndex)
                         || sourceIndex < 0
                         || sourceIndex >= taskModel.count
-                        || targetIndex < 0
-                        || targetIndex >= taskModel.count) {
+                        || reorderTargetIndex < 0
+                        || reorderTargetIndex >= taskModel.count) {
                     root.logWarning("reorder-invalid-index", {
                         sourceIndex: sourceIndex,
-                        targetIndex: targetIndex,
+                        targetIndex: reorderTargetIndex,
                         taskCount: taskModel.count
                     });
                     return;
                 }
 
-                if (sourceIndex === targetIndex) {
+                if (root.splitLayoutEnabled) {
+                    const sourceIndexModel = taskModel.makeModelIndex(sourceIndex);
+                    const targetIndexModel = taskModel.makeModelIndex(reorderTargetIndex);
+                    const sourceIsLauncher = taskModel.data(
+                        sourceIndexModel,
+                        TaskManager.AbstractTasksModel.IsLauncher
+                    );
+                    const targetIsLauncher = taskModel.data(
+                        targetIndexModel,
+                        TaskManager.AbstractTasksModel.IsLauncher
+                    );
+                    if (!sourceIsLauncher || !targetIsLauncher) {
+                        root.logWarning("reorder-non-launcher-rejected", {});
+                        return;
+                    }
+                }
+
+                if (sourceIndex === reorderTargetIndex) {
                     drop.acceptProposedAction();
                     return;
                 }
 
                 const moved = root.runAction(
                     "reorder-task",
-                    () => taskModel.move(sourceIndex, targetIndex)
+                    () => taskModel.move(sourceIndex, reorderTargetIndex)
                 );
 
                 if (moved === true) {
                     root.runAction("sync-launchers", () => taskModel.syncLaunchers());
                     root.logInfo("task-reordered", {
                         sourceIndex: sourceIndex,
-                        targetIndex: targetIndex
+                        targetIndex: reorderTargetIndex
                     });
                     drop.acceptProposedAction();
                 } else {
                     root.logWarning("reorder-rejected", {
                         sourceIndex: sourceIndex,
-                        targetIndex: targetIndex
+                        targetIndex: reorderTargetIndex
                     });
                 }
                 return;
             }
 
-            // External application launcher: pin it, even when dropped between icons.
+            // External application launcher: pin it anywhere on the dock.
             if (root.addDroppedLaunchers(drop.urls)) {
                 drop.acceptProposedAction();
                 return;
             }
 
-            // Ordinary files dropped on a running application are opened by it.
+            // File drops target a live window: the lower layer in split mode,
+            // or the unified row in single mode.
+            const taskList = root.splitLayoutEnabled ? runningTasksList : singleDockList;
+            const taskPoint = mapToItem(taskList, drop.x, drop.y);
+            const taskViewIndex = taskList.indexAt(taskPoint.x, taskPoint.y);
+            const taskDelegate = taskViewIndex >= 0
+                ? taskList.itemAtIndex(taskViewIndex) : null;
+            const targetIndex = taskDelegate ? taskDelegate.sourceIndex : -1;
+
             if (drop.urls && drop.urls.length > 0 && targetIndex >= 0) {
                 const targetModelIndex = taskModel.makeModelIndex(targetIndex);
                 const isWindow = taskModel.data(
@@ -810,4 +594,5 @@ PlasmoidItem {
             }
         }
     }
+
 }

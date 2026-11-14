@@ -11,6 +11,7 @@ KCMUtils.SimpleKCM {
     property alias cfg_showLaunchPulse: launchPulse.checked
     property alias cfg_enableAttentionReaction: attentionReaction.checked
     property alias cfg_enableDragReorder: dragReorder.checked
+    property alias cfg_groupApplications: groupApplications.checked
     property alias cfg_currentDesktopOnly: currentDesktopOnly.checked
     property alias cfg_currentScreenOnly: currentScreenOnly.checked
 
@@ -30,6 +31,10 @@ KCMUtils.SimpleKCM {
         QQC2.CheckBox {
             id: dragReorder
             text: i18n("Allow dragging icons to reorder the Dock")
+        }
+        QQC2.CheckBox {
+            id: groupApplications
+            text: i18n("Group windows from the same application")
         }
         QQC2.CheckBox {
             id: currentDesktopOnly

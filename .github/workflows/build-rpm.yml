@@ -48,6 +48,7 @@ jobs:
           export QML_IMPORT_PATH=/usr/lib64/qt6/qml
           qmllint --max-warnings 0 -I /usr/lib64/qt6/qml \
             package/contents/ui/main.qml \
+            package/contents/ui/GroupWindowChooser.qml \
             package/contents/config/config.qml \
             package/contents/config/ConfigAppearance.qml \
             package/contents/config/ConfigBehavior.qml

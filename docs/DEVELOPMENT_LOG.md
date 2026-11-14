@@ -2,6 +2,29 @@
 
 This file records dated engineering work. It is not a runtime error log and is not the future roadmap.
 
+## 2026-11-14 — 0.2.0 initial window grouping
+
+### Implemented
+- Added optional application grouping using KDE TasksModel::GroupApplications. Grouping is disabled by default to preserve the existing dock layout.
+- Added a compact Plasma-native PopupPlasmaWindow chooser backed by the hierarchical TasksModel child model.
+- Added per-window activation and close actions using makeModelIndex(parentRow, childRow).
+- Added a window-count badge and an ungroup action for grouped applications.
+- Added keyboard focus and Escape/Enter handling to the grouped window chooser.
+- Kept KWin minimize geometry publication working for group-parent delegates.
+- Close the chooser when its parent delegate is pooled, reused or no longer represents a group.
+- Added regression coverage for grouping configuration, child model indices, chooser actions, count badges and grouped minimize geometry.
+
+### Validation
+- GitHub Actions passed on the latest branch head: structural checks, all 20 Python regression tests, Python/shell syntax checks, strict QML lint, Fedora 44 RPM build and RPM metadata/file/dependency verification. [Successful run](https://github.com/bezeza/alveus-dock/actions/runs/43612176399).
+- Live Plasma runtime testing is required for popup placement, keyboard navigation, grouped activation/close, ungrouping and minimize effects on Wayland and X11.
+
+### Next
+- Verify grouping with two or more windows from the same application.
+- Test chooser placement on all four panel edges and vertical panels.
+- Test activation, close, ungroup and minimize-to-icon behavior.
+- Evaluate native KDE window previews after the chooser is stable.
+
+
 ## 2026-11-14 — 0.1.3 stabilization branch
 
 ### Implemented

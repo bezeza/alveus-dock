@@ -4,6 +4,13 @@ All notable user-visible changes to Alveus Dock are recorded here. This file rec
 
 ## [Unreleased]
 
+### Added
+- Optional application grouping using KDE's native TaskManager model.
+- Compact Plasma-native window chooser for grouped applications, with per-window activation and close actions.
+- Window-count badge on grouped application icons and an ungroup command in the context menu.
+- Keyboard navigation in the grouped chooser: Escape closes it and Enter activates the selected window.
+- Grouped-task delegates continue publishing their geometry to KWin for minimize effects.
+
 ## [0.1.3] - Unreleased — stabilization
 
 ### Fixed

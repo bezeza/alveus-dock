@@ -1,5 +1,7 @@
 # Alveus Dock — Development Log
 
+This file records dated engineering work. It is not a runtime error log and is not the future roadmap.
+
 ## 2026-11-14 — 0.1.3 stabilization branch
 
 ### Implemented
@@ -20,9 +22,6 @@
 - Review QML lint and regression test results from GitHub Actions.
 - Fix any new CI findings.
 - Test drag reorder, launcher persistence, delegate recycling and hover effects in a live Plasma session.
-
-
-This file records dated engineering work. It is not a runtime error log and is not the future roadmap.
 
 ## 2026-11-14 — dedicated repository and packaging audit
 

@@ -36,6 +36,7 @@ jobs:
 
       - name: Lint QML
         run: |
+          export PATH=/usr/lib64/qt6/bin:$PATH
           export QML_IMPORT_PATH=/usr/lib64/qt6/qml
           qmllint -I /usr/lib64/qt6/qml \
             package/contents/ui/main.qml \

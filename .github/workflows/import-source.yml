@@ -19,32 +19,54 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extract source archive
+      - name: Recover source files from archive local records
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/alveus-dock-import
           python3 - <<'PY'
-          from pathlib import Path
-          import struct, zipfile
+          from pathlib import Path, PurePosixPath
+          import struct, zlib
           archive = Path("migration/alveus-dock-0.1.2-source.zip")
-          data = bytearray(archive.read_bytes())
-          eocd = data.rfind(bytes.fromhex("504b0506"))
-          central = data.find(bytes.fromhex("504b0102"))
-          if eocd < 0 or central < 0:
-              raise SystemExit("ZIP signatures missing; archive cannot be repaired safely")
-          # The legacy snapshot's EOCD central-directory offset and size are both off by 18 bytes.
-          central_size = eocd - central
-          struct.pack_into("<L", data, eocd + 12, central_size)
-          struct.pack_into("<L", data, eocd + 16, central)
-          archive.write_bytes(data)
-          with zipfile.ZipFile(archive) as zf:
-              names = zf.namelist()
-              print("REPAIRED_ENTRIES", len(names), names)
-              bad = zf.testzip()
-              if bad:
-                  raise SystemExit(f"CRC check failed: {bad}")
-              zf.extractall("/tmp/alveus-dock-import")
+          data = archive.read_bytes()
+          out = Path("/tmp/alveus-dock-import")
+          out.mkdir(parents=True, exist_ok=True)
+          pos = 0
+          extracted = []
+          while data[pos:pos + 4] == bytes.fromhex("504b0304"):
+              (version, flags, method, mtime, mdate, crc_expected,
+               compressed_size, uncompressed_size, name_len, extra_len) = struct.unpack_from("<HHHHHIIIHH", data, pos + 4)
+              name_start = pos + 30
+              name = data[name_start:name_start + name_len].decode("utf-8")
+              payload_start = name_start + name_len + extra_len
+              payload_end = payload_start + compressed_size
+              payload = data[payload_start:payload_end]
+              if len(payload) != compressed_size:
+                  raise SystemExit(f"Truncated payload for {name}")
+              if flags & 0x08:
+                  raise SystemExit(f"Unexpected data descriptor for {name}; manual recovery stopped")
+              if method == 8:
+                  content = zlib.decompress(payload, -15)
+              elif method == 0:
+                  content = payload
+              else:
+                  raise SystemExit(f"Unsupported ZIP compression method {method} for {name}")
+              if len(content) != uncompressed_size:
+                  raise SystemExit(f"Size mismatch for {name}: {len(content)} != {uncompressed_size}")
+              crc_actual = zlib.crc32(content) & 0xffffffff
+              if crc_actual != crc_expected:
+                  raise SystemExit(f"CRC mismatch for {name}: {crc_actual:08x} != {crc_expected:08x}")
+              relative = PurePosixPath(name)
+              if relative.is_absolute() or ".." in relative.parts:
+                  raise SystemExit(f"Unsafe archive path: {name}")
+              destination = out.joinpath(*relative.parts)
+              destination.parent.mkdir(parents=True, exist_ok=True)
+              destination.write_bytes(content)
+              extracted.append(name)
+              pos = payload_end
+          if not extracted:
+              raise SystemExit("No local ZIP entries found")
+          print("RECOVERED_FILES", len(extracted), extracted)
+          print("ARCHIVE_LOCAL_DATA_END", pos, "CENTRAL_DIRECTORY_START", data.find(bytes.fromhex("504b0102")))
           PY
           test -d /tmp/alveus-dock-import/alveus-dock
           cp -a /tmp/alveus-dock-import/alveus-dock/. .

@@ -27,8 +27,8 @@ PlasmoidItem {
     readonly property int runningTasksIconSize: Plasmoid.configuration.runningTasksIconSize
     readonly property int quickAccessSpacing: Plasmoid.configuration.quickAccessSpacing
     readonly property int runningTasksSpacing: Plasmoid.configuration.runningTasksSpacing
-    readonly property int quickAccessItemExtent: quickAccessIconSize + 12
-    readonly property int runningTasksItemExtent: runningTasksIconSize + 12
+    readonly property int quickAccessItemExtent: quickAccessIconSize + 8
+    readonly property int runningTasksItemExtent: runningTasksIconSize + 8
     readonly property bool splitLayoutEnabled: dockLayoutMode !== 0
     readonly property bool showRunningLayer: dockLayoutMode === 1
         || (dockLayoutMode === 2 && runningTasksVisualModel.count > 0)
@@ -57,7 +57,7 @@ PlasmoidItem {
     }
 
     function itemExtentForTask(isLauncher) {
-        return iconSizeForTask(isLauncher) + 12;
+        return iconSizeForTask(isLauncher) + (splitLayoutEnabled ? 8 : 12);
     }
 
     signal iconGeometryRefreshRequested()

@@ -230,7 +230,7 @@ class PackageContractTests(unittest.TestCase):
         for name in ["quickAccessIconSize", "runningTasksIconSize"]:
             entry = self.kcfg.find(f".//{KCFG_NS}entry[@name='{name}']")
             self.assertIsNotNone(entry)
-            self.assertEqual(entry.find(f"{KCFG_NS}default").text, "40")
+            self.assertEqual(entry.find(f"{KCFG_NS}default").text, "32")
         for name in ["quickAccessSpacing", "runningTasksSpacing"]:
             entry = self.kcfg.find(f".//{KCFG_NS}entry[@name='{name}']")
             self.assertIsNotNone(entry)

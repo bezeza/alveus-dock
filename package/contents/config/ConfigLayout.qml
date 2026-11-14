@@ -28,6 +28,7 @@ KCMUtils.SimpleKCM {
 
         QQC2.SpinBox {
             id: layerSpacing
+            enabled: layoutMode.currentIndex !== 0
             Kirigami.FormData.label: i18n("Space between layers:")
             from: 0
             to: 16
@@ -35,6 +36,7 @@ KCMUtils.SimpleKCM {
 
         QQC2.SpinBox {
             id: quickAccessIconSize
+            enabled: layoutMode.currentIndex !== 0
             Kirigami.FormData.label: i18n("Quick Access icon size:")
             from: 24
             to: 72
@@ -42,6 +44,7 @@ KCMUtils.SimpleKCM {
 
         QQC2.SpinBox {
             id: runningTasksIconSize
+            enabled: layoutMode.currentIndex !== 0
             Kirigami.FormData.label: i18n("Running window icon size:")
             from: 24
             to: 72
@@ -49,6 +52,7 @@ KCMUtils.SimpleKCM {
 
         QQC2.SpinBox {
             id: quickAccessSpacing
+            enabled: layoutMode.currentIndex !== 0
             Kirigami.FormData.label: i18n("Quick Access icon spacing:")
             from: 0
             to: 18
@@ -56,6 +60,7 @@ KCMUtils.SimpleKCM {
 
         QQC2.SpinBox {
             id: runningTasksSpacing
+            enabled: layoutMode.currentIndex !== 0
             Kirigami.FormData.label: i18n("Running window spacing:")
             from: 0
             to: 18

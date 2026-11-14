@@ -84,7 +84,8 @@ class PackageContractTests(unittest.TestCase):
         self.assertGreater(reused, pooled)
         pooled_block = self.qml[pooled:reused]
         for token in ["hovered = false", "launchScale = 1.0", "launchBounce.stop()",
-                      "launchPulse.stop()", "attentionReaction.stop()"]:
+                      "launchPulse.stop()", "attentionReaction.stop()", "energyPulse.opacity = 0",
+                      "attentionRing.opacity = 0", "contextMenu.close()"]:
             self.assertIn(token, pooled_block)
         self.assertIn("launchScale = 1.0", self.qml[reused:])
 

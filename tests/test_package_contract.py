@@ -172,10 +172,10 @@ class PackageContractTests(unittest.TestCase):
         )
 
     def test_model_change_handler_refreshes_geometry_and_closes_stale_chooser(self):
-        handlers = re.findall(r"^\\s*onModelChanged\\s*:", self.task_delegate, re.MULTILINE)
+        handlers = re.findall(r"^\s*onModelChanged\s*:", self.task_delegate, re.MULTILINE)
         self.assertEqual(len(handlers), 1)
         handler_start = self.task_delegate.find("onModelChanged:")
-        handler_end = self.task_delegate.find("\\n    }", handler_start)
+        handler_end = self.task_delegate.find("\n    }", handler_start)
         handler = self.task_delegate[handler_start:handler_end]
         self.assertIn("scheduleIconGeometryPublish()", handler)
         self.assertIn("dockRoot.closeGroupChooser()", handler)

@@ -24,53 +24,24 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          from pathlib import Path, PurePosixPath
+          from pathlib import Path
           import struct, zlib
-          archive = Path("migration/alveus-dock-0.1.2-source.zip")
-          data = archive.read_bytes()
-          out = Path("/tmp/alveus-dock-import")
-          out.mkdir(parents=True, exist_ok=True)
-          pos = 0
-          extracted = []
-          while data[pos:pos + 4] == bytes.fromhex("504b0304"):
-              (version, flags, method, mtime, mdate, crc_expected,
-               compressed_size, uncompressed_size, name_len, extra_len) = struct.unpack_from("<HHHHHIIIHH", data, pos + 4)
-              name_start = pos + 30
-              name = data[name_start:name_start + name_len].decode("utf-8")
-              payload_start = name_start + name_len + extra_len
-              payload_end = payload_start + compressed_size
-              payload = data[payload_start:payload_end]
-              if len(payload) != compressed_size:
-                  raise SystemExit(f"Truncated payload for {name}")
-              if flags & 0x08:
-                  raise SystemExit(f"Unexpected data descriptor for {name}; manual recovery stopped")
-              if method == 8:
-                  content = zlib.decompress(payload, -15)
-              elif method == 0:
-                  content = payload
-              else:
-                  raise SystemExit(f"Unsupported ZIP compression method {method} for {name}")
-              if len(content) != uncompressed_size:
-                  raise SystemExit(f"Size mismatch for {name}: {len(content)} != {uncompressed_size}")
-              crc_actual = zlib.crc32(content) & 0xffffffff
-              if crc_actual != crc_expected:
-                  raise SystemExit(f"CRC mismatch for {name}: {crc_actual:08x} != {crc_expected:08x}")
-              relative = PurePosixPath(name)
-              if relative.is_absolute() or ".." in relative.parts:
-                  raise SystemExit(f"Unsafe archive path: {name}")
-              destination = out.joinpath(*relative.parts)
-              destination.parent.mkdir(parents=True, exist_ok=True)
-              destination.write_bytes(content)
-              extracted.append(name)
-              pos = payload_end
-          if not extracted:
-              raise SystemExit("No local ZIP entries found")
-          print("RECOVERED_FILES", len(extracted), extracted)
-          print("ARCHIVE_LOCAL_DATA_END", pos, "CENTRAL_DIRECTORY_START", data.find(bytes.fromhex("504b0102")))
+          b = Path("migration/alveus-dock-0.1.2-source.zip").read_bytes()
+          fields = struct.unpack_from("<HHHHHIIIHH", b, 4)
+          version, flags, method, mt, md, crc, csize, usize, nlen, elen = fields
+          start = 30 + nlen + elen
+          print("FIRST_LOCAL", fields, "NAME", b[30:30+nlen], "DATA_START", start, "DATA_HEX", b[start:start+32].hex())
+          for delta in range(-16,17):
+              p = start + delta
+              if p < 0: continue
+              try:
+                  raw = zlib.decompress(b[p:p+csize], -15)
+                  got = zlib.crc32(raw) & 0xffffffff
+                  print("DEFLATE_CANDIDATE", delta, "len", len(raw), "crc", hex(got), "matches", got == crc)
+              except Exception as e:
+                  pass
           PY
-          test -d /tmp/alveus-dock-import/alveus-dock
-          cp -a /tmp/alveus-dock-import/alveus-dock/. .
-          rm -rf migration
+          false
 
       - name: Commit imported source
         shell: bash

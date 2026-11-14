@@ -3,11 +3,11 @@
   "KPlugin": {
     "Id": "org.bezeza.alveusdock",
     "Name": "Alveus Dock",
-    "Description": "A compact, animated application dock for KDE Plasma 6",
+    "Description": "A lightweight dock for KDE Plasma 6 with launcher and task management, finite icon reactions and Fedora RPM support",
     "Version": "0.1.2",
     "Category": "Windows and Tasks",
     "Icon": "preferences-system-windows",
-    "License": "GPL-2.0-or-later",
+    "License": "GPL-3.0-only",
     "EnabledByDefault": true
   },
   "X-Plasma-API-Minimum-Version": "6.0"

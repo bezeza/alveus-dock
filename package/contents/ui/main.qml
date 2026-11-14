@@ -84,6 +84,28 @@ PlasmoidItem {
                || value.includes(".desktop?");
     }
 
+    // Convert a delegate's bounds to screen coordinates. KDE's task model
+    // forwards this geometry to KWin for minimize-to-icon effects.
+    function globalRect(item) {
+        const topLeft = item.mapToGlobal(0, 0);
+        const bottomRight = item.mapToGlobal(item.width, item.height);
+        return Qt.rect(
+            topLeft.x,
+            topLeft.y,
+            bottomRight.x - topLeft.x,
+            bottomRight.y - topLeft.y
+        );
+    }
+
+    function publishAllDelegateGeometries() {
+        for (let i = 0; i < dockList.count; ++i) {
+            const item = dockList.itemAtIndex(i);
+            if (item) {
+                item.publishIconGeometry();
+            }
+        }
+    }
+
     function addDroppedLaunchers(urls) {
         if (!urls || urls.length === 0) {
             logWarning("launcher-drop-empty", {});
@@ -119,6 +141,20 @@ PlasmoidItem {
         return addedCount > 0;
     }
 
+    // Panel placement can settle a little after Plasma reports a location or
+    // screen change. Publish after the layout has finished moving.
+    Timer {
+        id: iconGeometryTimer
+        interval: 200
+        repeat: false
+        onTriggered: root.publishAllDelegateGeometries()
+    }
+
+    onXChanged: iconGeometryTimer.restart()
+    onYChanged: iconGeometryTimer.restart()
+    onWidthChanged: iconGeometryTimer.restart()
+    onHeightChanged: iconGeometryTimer.restart()
+
     TaskManager.TasksModel {
         id: taskModel
 
@@ -136,6 +172,7 @@ PlasmoidItem {
 
         onCountChanged: {
             root.logInfo("task-count-changed", { count: count });
+            iconGeometryTimer.restart();
         }
 
         onLauncherListChanged: {
@@ -159,6 +196,22 @@ PlasmoidItem {
 
     Component.onDestruction: {
         root.logInfo("applet-stopped", {});
+    }
+
+    Connections {
+        target: Plasmoid
+
+        function onLocationChanged() {
+            iconGeometryTimer.restart();
+        }
+    }
+
+    Connections {
+        target: Plasmoid.containment
+
+        function onScreenGeometryChanged() {
+            iconGeometryTimer.restart();
+        }
     }
 
     Connections {
@@ -240,11 +293,41 @@ PlasmoidItem {
                         && Plasmoid.configuration.enableAttentionReaction) {
                     attentionReaction.restart();
                 }
+                delegateRoot.scheduleIconGeometryPublish();
             }
 
             function modelIndex() {
                 return taskModel.makeModelIndex(index);
             }
+
+            function publishIconGeometry() {
+                if (!delegateRoot.visible
+                        || !delegateRoot.model
+                        || !delegateRoot.model.IsWindow
+                        || delegateRoot.model.IsLauncher
+                        || delegateRoot.model.IsStartup) {
+                    return;
+                }
+
+                const geometry = root.globalRect(delegateRoot);
+                taskModel.requestPublishDelegateGeometry(
+                    delegateRoot.modelIndex(),
+                    geometry,
+                    delegateRoot
+                );
+            }
+
+            function scheduleIconGeometryPublish() {
+                Qt.callLater(publishIconGeometry);
+            }
+
+            onXChanged: scheduleIconGeometryPublish()
+            onYChanged: scheduleIconGeometryPublish()
+            onWidthChanged: scheduleIconGeometryPublish()
+            onHeightChanged: scheduleIconGeometryPublish()
+            onModelChanged: scheduleIconGeometryPublish()
+
+            Component.onCompleted: scheduleIconGeometryPublish()
 
             function activateTask() {
                 const idx = modelIndex();

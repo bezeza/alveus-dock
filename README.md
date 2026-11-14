@@ -20,6 +20,7 @@ It is an independent applet, not a patch or replacement for KDE's Icons-Only Tas
 - Drop .desktop files or applications: URLs on the dock to pin launchers.
 - Drop files onto a running application icon to open them with that application.
 - Optional filtering to the current virtual desktop and current screen.
+- Publishes each running window's dock-icon geometry to KDE TaskManager so KWin can target the Alveus icon for minimize effects such as Magic Lamp.
 
 ### Motion and visual feedback
 - Smooth hover scaling.
@@ -29,7 +30,7 @@ It is an independent applet, not a patch or replacement for KDE's Icons-Only Tas
 - Active-window marker and startup busy indicator.
 - Animations are event-driven and finite. There is no permanent animation loop.
 
-KWin effects such as Magic Lamp remain KDE/KWin features and are not reimplemented by Alveus Dock.
+KWin effects such as Magic Lamp remain KDE/KWin features and are not reimplemented by Alveus Dock. Alveus only publishes the geometry of its running-window delegates through the native TaskManager API; the effect itself remains under KWin's control.
 
 ### Settings
 - Icon size, spacing and hover scale.

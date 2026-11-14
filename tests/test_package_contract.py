@@ -113,6 +113,30 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("sourceIndex >= taskModel.count", self.qml)
         self.assertIn("targetIndex >= taskModel.count", self.qml)
 
+    def test_kde_minimize_effect_geometry_is_published(self):
+        self.assertIn("function globalRect(item)", self.qml)
+        self.assertIn("item.mapToGlobal(0, 0)", self.qml)
+        self.assertIn("taskModel.requestPublishDelegateGeometry(", self.qml)
+        self.assertIn("delegateRoot.model.IsWindow", self.qml)
+        self.assertRegex(
+            self.qml,
+            r"requestPublishDelegateGeometry\\(\\s*delegateRoot\\.modelIndex\\(\\),"
+            r"\\s*geometry,\\s*delegateRoot\\s*\\)",
+        )
+
+    def test_window_geometry_is_refreshed_after_layout_changes(self):
+        for token in [
+            "onXChanged: scheduleIconGeometryPublish()",
+            "onYChanged: scheduleIconGeometryPublish()",
+            "onWidthChanged: scheduleIconGeometryPublish()",
+            "onHeightChanged: scheduleIconGeometryPublish()",
+            "onLocationChanged()",
+            "onScreenGeometryChanged()",
+            "root.publishAllDelegateGeometries()",
+            "delegateRoot.scheduleIconGeometryPublish()",
+        ]:
+            self.assertIn(token, self.qml)
+
     def test_project_has_performance_diagnostic(self):
         self.assertTrue((ROOT / "docs/PERFORMANCE.md").is_file())
         self.assertTrue((ROOT / "scripts/profile-plasmashell.py").is_file())

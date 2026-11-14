@@ -16,6 +16,9 @@ All notable user-visible changes to Alveus Dock are recorded here. This file rec
 - Strict QML lint policy for unqualified accesses.
 - Regression tests for package metadata, settings schema, drag reordering, delegate reuse and diagnostic privacy.
 - A plasmashell CPU/RSS sampler and repeatable performance test instructions.
+- Publish live running-window icon geometry through KDE TasksModel so KWin can use Alveus Dock icons as minimize-animation targets (including Magic Lamp where supported).
+- Refresh icon geometry after dock layout, panel location and screen changes.
+- Regression tests for KWin geometry publication and refresh behavior.
 
 ### Notes
 - Live Plasma runtime testing and measurements on real hardware are still required.

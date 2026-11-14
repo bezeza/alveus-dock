@@ -13,6 +13,7 @@ Build a small, responsive KDE Plasma dock that feels more expressive than Icons-
 - [ ] Resolve all QML parser, import and runtime warnings in a live Plasma session.
 - [ ] Verify launcher pinning, unpinning and persistence after Plasma restart.
 - [ ] Verify activation, minimizing, close and new-instance actions.
+- [ ] Verify KWin minimize animations target Alveus task icons via published delegate geometry on X11 and Wayland.
 - [ ] Verify internal drag/reorder and external .desktop launcher drops.
 - [ ] Verify file drops onto running application windows.
 - [ ] Verify current-desktop and current-screen filters.

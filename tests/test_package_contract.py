@@ -297,7 +297,7 @@ class PackageContractTests(unittest.TestCase):
 
     def test_filtered_views_keep_source_model_indices(self):
         self.assertIn("sourceIndex: DelegateModel.itemsIndex", self.qml)
-        self.assertIn("return taskModel.makeModelIndex(sourceIndex)", self.task_delegate)
+        self.assertIn("return delegateRoot.taskModel.makeModelIndex(sourceIndex)", self.task_delegate)
         self.assertIn("delegateRoot.modelIndex(),", self.task_delegate)
         self.assertIn("function sourceIndexFromDelegate(delegateItem)", self.qml)
         self.assertIn("root.sourceIndexFromDelegate(taskDelegate)", self.qml)

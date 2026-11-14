@@ -10,5 +10,5 @@
     "License": "GPL-3.0-only",
     "EnabledByDefault": true
   },
-  "X-Plasma-API-Minimum-Version": "6.0"
+  "X-Plasma-API-Minimum-Version": "6.8"
 }

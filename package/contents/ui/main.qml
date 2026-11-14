@@ -25,20 +25,42 @@ PlasmoidItem {
     readonly property real hoverScale: Plasmoid.configuration.hoverScale / 100.0
     readonly property int dockLayoutMode: Plasmoid.configuration.dockLayoutMode
     readonly property int layerSpacing: Plasmoid.configuration.layerSpacing
+    readonly property int quickAccessIconSize: Plasmoid.configuration.quickAccessIconSize
+    readonly property int runningTasksIconSize: Plasmoid.configuration.runningTasksIconSize
+    readonly property int quickAccessSpacing: Plasmoid.configuration.quickAccessSpacing
+    readonly property int runningTasksSpacing: Plasmoid.configuration.runningTasksSpacing
+    readonly property int quickAccessItemExtent: quickAccessIconSize + 12
+    readonly property int runningTasksItemExtent: runningTasksIconSize + 12
     readonly property bool splitLayoutEnabled: dockLayoutMode !== 0
     readonly property bool showRunningLayer: dockLayoutMode === 1
         || (dockLayoutMode === 2 && runningTasksVisualModel.count > 0)
-    readonly property int visibleItemsPerLayer: splitLayoutEnabled
-        ? Math.max(quickAccessVisualModel.count, showRunningLayer ? runningTasksVisualModel.count : 0)
-        : taskModel.count
-    readonly property int panelLength: Math.max(
-        itemExtent,
-        visibleItemsPerLayer * itemExtent
-            + Math.max(0, visibleItemsPerLayer - 1) * Plasmoid.configuration.iconSpacing
-            + dockPadding * 2
-    )
-    readonly property int panelThickness: itemExtent * (showRunningLayer ? 2 : 1)
-        + (showRunningLayer ? layerSpacing : 0) + dockPadding * 2
+    readonly property int quickAccessLength: quickAccessVisualModel.count * quickAccessItemExtent
+        + Math.max(0, quickAccessVisualModel.count - 1) * quickAccessSpacing
+        + dockPadding * 2
+    readonly property int runningTasksLength: runningTasksVisualModel.count * runningTasksItemExtent
+        + Math.max(0, runningTasksVisualModel.count - 1) * runningTasksSpacing
+        + dockPadding * 2
+    readonly property int panelLength: splitLayoutEnabled
+        ? Math.max(quickAccessItemExtent + dockPadding * 2,
+                   quickAccessLength, showRunningLayer ? runningTasksLength : 0)
+        : Math.max(itemExtent + dockPadding * 2,
+                   taskModel.count * itemExtent
+                   + Math.max(0, taskModel.count - 1) * Plasmoid.configuration.iconSpacing
+                   + dockPadding * 2)
+    readonly property int panelThickness: splitLayoutEnabled && showRunningLayer
+        ? quickAccessItemExtent + runningTasksItemExtent + layerSpacing + dockPadding * 2
+        : (splitLayoutEnabled ? quickAccessItemExtent : itemExtent) + dockPadding * 2
+
+    function iconSizeForTask(isLauncher) {
+        if (!splitLayoutEnabled) {
+            return iconSize;
+        }
+        return isLauncher ? quickAccessIconSize : runningTasksIconSize;
+    }
+
+    function itemExtentForTask(isLauncher) {
+        return iconSizeForTask(isLauncher) + 12;
+    }
 
     signal iconGeometryRefreshRequested()
 
@@ -102,8 +124,8 @@ PlasmoidItem {
     Plasmoid.backgroundHints: PlasmaCore.Types.NoBackground
     Plasmoid.constraintHints: Plasmoid.CanFillArea
 
-    Layout.minimumWidth: vertical ? panelThickness : itemExtent + dockPadding * 2
-    Layout.minimumHeight: vertical ? itemExtent + dockPadding * 2 : panelThickness
+    Layout.minimumWidth: vertical ? panelThickness : Math.max(itemExtent, quickAccessItemExtent) + dockPadding * 2
+    Layout.minimumHeight: vertical ? Math.max(itemExtent, quickAccessItemExtent) + dockPadding * 2 : panelThickness
 
     Layout.preferredWidth: vertical ? panelThickness : panelLength
     Layout.preferredHeight: vertical ? panelLength : panelThickness
@@ -444,11 +466,11 @@ PlasmoidItem {
 
         x: root.dockPadding
         y: root.dockPadding
-        width: root.vertical ? root.itemExtent : Math.max(0, parent.width - root.dockPadding * 2)
-        height: root.vertical ? Math.max(0, parent.height - root.dockPadding * 2) : root.itemExtent
+        width: root.vertical ? root.quickAccessItemExtent : Math.max(0, parent.width - root.dockPadding * 2)
+        height: root.vertical ? Math.max(0, parent.height - root.dockPadding * 2) : root.quickAccessItemExtent
         z: 1
         orientation: root.vertical ? ListView.Vertical : ListView.Horizontal
-        spacing: Plasmoid.configuration.iconSpacing
+        spacing: root.quickAccessSpacing
         model: root.splitLayoutEnabled ? quickAccessVisualModel : null
         visible: root.splitLayoutEnabled
         clip: false
@@ -461,16 +483,16 @@ PlasmoidItem {
         id: runningTasksList
 
         x: root.vertical
-            ? root.dockPadding + root.itemExtent + root.layerSpacing
+            ? root.dockPadding + root.quickAccessItemExtent + root.layerSpacing
             : root.dockPadding
         y: root.vertical
             ? root.dockPadding
-            : root.dockPadding + root.itemExtent + root.layerSpacing
-        width: root.vertical ? root.itemExtent : Math.max(0, parent.width - root.dockPadding * 2)
-        height: root.vertical ? Math.max(0, parent.height - root.dockPadding * 2) : root.itemExtent
+            : root.dockPadding + root.quickAccessItemExtent + root.layerSpacing
+        width: root.vertical ? root.runningTasksItemExtent : Math.max(0, parent.width - root.dockPadding * 2)
+        height: root.vertical ? Math.max(0, parent.height - root.dockPadding * 2) : root.runningTasksItemExtent
         z: 1
         orientation: root.vertical ? ListView.Vertical : ListView.Horizontal
-        spacing: Plasmoid.configuration.iconSpacing
+        spacing: root.runningTasksSpacing
         model: root.showRunningLayer ? runningTasksVisualModel : null
         visible: root.showRunningLayer
         clip: false

@@ -10,6 +10,10 @@ import org.kde.kirigami as Kirigami
 KCMUtils.SimpleKCM {
     property alias cfg_dockLayoutMode: layoutMode.currentIndex
     property alias cfg_layerSpacing: layerSpacing.value
+    property alias cfg_quickAccessIconSize: quickAccessIconSize.value
+    property alias cfg_runningTasksIconSize: runningTasksIconSize.value
+    property alias cfg_quickAccessSpacing: quickAccessSpacing.value
+    property alias cfg_runningTasksSpacing: runningTasksSpacing.value
 
     Kirigami.FormLayout {
         QQC2.ComboBox {
@@ -27,6 +31,34 @@ KCMUtils.SimpleKCM {
             Kirigami.FormData.label: i18n("Space between layers:")
             from: 0
             to: 16
+        }
+
+        QQC2.SpinBox {
+            id: quickAccessIconSize
+            Kirigami.FormData.label: i18n("Quick Access icon size:")
+            from: 24
+            to: 72
+        }
+
+        QQC2.SpinBox {
+            id: runningTasksIconSize
+            Kirigami.FormData.label: i18n("Running window icon size:")
+            from: 24
+            to: 72
+        }
+
+        QQC2.SpinBox {
+            id: quickAccessSpacing
+            Kirigami.FormData.label: i18n("Quick Access icon spacing:")
+            from: 0
+            to: 18
+        }
+
+        QQC2.SpinBox {
+            id: runningTasksSpacing
+            Kirigami.FormData.label: i18n("Running window spacing:")
+            from: 0
+            to: 18
         }
 
         QQC2.Label {

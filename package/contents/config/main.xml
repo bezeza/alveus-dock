@@ -10,6 +10,10 @@
     <entry name="iconSpacing" type="Int"><default>6</default><min>0</min><max>18</max></entry>
     <entry name="dockLayoutMode" type="Int"><default>0</default><min>0</min><max>2</max></entry>
     <entry name="layerSpacing" type="Int"><default>4</default><min>0</min><max>16</max></entry>
+    <entry name="quickAccessIconSize" type="Int"><default>40</default><min>24</min><max>72</max></entry>
+    <entry name="runningTasksIconSize" type="Int"><default>40</default><min>24</min><max>72</max></entry>
+    <entry name="quickAccessSpacing" type="Int"><default>6</default><min>0</min><max>18</max></entry>
+    <entry name="runningTasksSpacing" type="Int"><default>6</default><min>0</min><max>18</max></entry>
     <entry name="hoverScale" type="Int"><default>112</default><min>100</min><max>130</max></entry>
     <entry name="showBackground" type="Bool"><default>true</default></entry>
     <entry name="showActiveIndicator" type="Bool"><default>true</default></entry>

@@ -30,8 +30,8 @@ Item {
         + (model.IsGroupParent ? qsTr(", %1 windows").arg(childCount) : "")
     Accessible.role: Accessible.Button
 
-    width: dockRoot.itemExtent
-    height: dockRoot.itemExtent
+    width: dockRoot.itemExtentForTask(model.IsLauncher)
+    height: dockRoot.itemExtentForTask(model.IsLauncher)
     z: hovered ? 2 : 0
 
     onDemandingAttentionChanged: {
@@ -166,8 +166,8 @@ Item {
         id: appIcon
 
         anchors.centerIn: parent
-        width: dockRoot.iconSize
-        height: dockRoot.iconSize
+        width: dockRoot.iconSizeForTask(delegateRoot.model.IsLauncher)
+        height: dockRoot.iconSizeForTask(delegateRoot.model.IsLauncher)
         source: delegateRoot.model.decoration
         active: delegateRoot.hovered
         enabled: true
@@ -210,7 +210,7 @@ Item {
         id: energyPulse
 
         anchors.centerIn: appIcon
-        width: dockRoot.iconSize * 0.68
+        width: dockRoot.iconSizeForTask(delegateRoot.model.IsLauncher) * 0.68
         height: width
         radius: width / 2
         color: "transparent"
@@ -226,7 +226,7 @@ Item {
         id: attentionRing
 
         anchors.centerIn: appIcon
-        width: dockRoot.iconSize * 0.9
+        width: dockRoot.iconSizeForTask(delegateRoot.model.IsLauncher) * 0.9
         height: width
         radius: width / 2
         color: "transparent"

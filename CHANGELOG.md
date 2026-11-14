@@ -4,7 +4,7 @@ All notable user-visible changes to Alveus Dock are recorded here. This file rec
 
 ## [Unreleased]
 
-## [0.1.3] - 2026-11-14 — stabilization
+## [0.1.3] - Unreleased — stabilization
 
 ### Fixed
 - Synchronize launcher order after a successful manual task reorder.

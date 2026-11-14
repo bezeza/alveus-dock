@@ -15,13 +15,12 @@ This file records dated engineering work. It is not a runtime error log and is n
 
 ### Validation
 - KDE TaskManager API documentation confirms move() returns a boolean and syncLaunchers() must be called after move operations to persist launcher ordering.
-- CI validation is pending for this branch.
+- GitHub Actions passed: structural checks, all 11 Python regression tests, Python/shell syntax checks, strict QML lint with zero warnings, RPM build and RPM metadata/file/dependency verification. See [the successful CI run](https://github.com/bezeza/alveus-dock/actions/runs/43597366134).
 - Live Plasma runtime and performance tests remain pending because no KDE desktop session is available here.
 
 ### Next
-- Review QML lint and regression test results from GitHub Actions.
-- Fix any new CI findings.
-- Test drag reorder, launcher persistence, delegate recycling and hover effects in a live Plasma session.
+- Run the applet in a live Plasma session and verify drag reorder, launcher persistence, delegate recycling and hover effects.
+- Compare CPU/RSS samples with the dock disabled and enabled.
 
 ## 2026-11-14 — dedicated repository and packaging audit
 

@@ -26,7 +26,8 @@ PlasmaCore.PopupPlasmaWindow {
     signal activateRequested(var childIndex)
     signal closeRequested(var childIndex)
 
-    readonly property int childCount: taskModel.rowCount(taskModel.makeModelIndex(parentIndex))
+    readonly property int childCount: visualParent && parentIndex >= 0
+        ? taskModel.rowCount(taskModel.makeModelIndex(parentIndex)) : 0
 
     width: chooserContent.implicitWidth
     height: chooserContent.implicitHeight
@@ -43,7 +44,8 @@ PlasmaCore.PopupPlasmaWindow {
     }
 
     function modelIndexForChild(childRow) {
-        if (!Number.isInteger(childRow) || childRow < 0 || childRow >= childCount) {
+        if (!visualParent || parentIndex < 0
+                || !Number.isInteger(childRow) || childRow < 0 || childRow >= childCount) {
             return null;
         }
         return taskModel.makeModelIndex(parentIndex, childRow);
@@ -126,7 +128,7 @@ PlasmaCore.PopupPlasmaWindow {
                                         : childDelegate.model.IsMinimized
                                             ? qsTr("Minimized") : qsTr("Open")
                                     color: Kirigami.Theme.disabledTextColor
-                                    font.pixelSize: Kirigami.Theme.smallFont.pixelSize
+                                    font.pixelSize: 10
                                 }
                             }
 

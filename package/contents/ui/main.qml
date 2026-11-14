@@ -25,6 +25,29 @@ PlasmoidItem {
 
     signal iconGeometryRefreshRequested()
 
+    property Item groupVisualParent: null
+    property int groupParentIndex: -1
+    property string groupTitle: ""
+
+    function closeGroupChooser() {
+        groupWindowChooser.visible = false;
+        groupVisualParent = null;
+        groupParentIndex = -1;
+        groupTitle = "";
+    }
+
+    function toggleGroupChooser(delegateItem) {
+        if (groupWindowChooser.visible && groupVisualParent === delegateItem) {
+            closeGroupChooser();
+            return;
+        }
+
+        groupVisualParent = delegateItem;
+        groupParentIndex = delegateItem.index;
+        groupTitle = String(delegateItem.model.display || "");
+        groupWindowChooser.visible = true;
+    }
+
     // Diagnostics are written to the Plasma/Qt journal. Do not log window titles,
     // application names, file paths or dropped URLs.
     function logInfo(eventName, details) {
@@ -185,6 +208,31 @@ PlasmoidItem {
         }
     }
 
+    GroupWindowChooser {
+        id: groupWindowChooser
+
+        visualParent: root.groupVisualParent
+        taskModel: taskModel
+        parentIndex: root.groupParentIndex
+        groupTitle: root.groupTitle
+        vertical: root.vertical
+
+        onActivateRequested: childIndex => {
+            root.runAction(
+                "activate-group-window",
+                () => taskModel.requestActivate(childIndex)
+            );
+            root.closeGroupChooser();
+        }
+
+        onCloseRequested: childIndex => {
+            root.runAction(
+                "close-group-window",
+                () => taskModel.requestClose(childIndex)
+            );
+        }
+    }
+
     Component.onCompleted: {
         root.logInfo("applet-started", {
             version: "0.1.3",
@@ -288,7 +336,9 @@ PlasmoidItem {
                 attentionRing.opacity = 0;
                 attentionRing.scale = 0.8;
                 contextMenu.close();
-                groupWindowChooser.visible = false;
+                if (root.groupVisualParent === delegateRoot) {
+                    root.closeGroupChooser();
+                }
             }
 
             ListView.onReused: {
@@ -346,8 +396,8 @@ PlasmoidItem {
                 const idx = modelIndex();
 
                 if (model.IsGroupParent) {
-                    groupWindowChooser.visible = !groupWindowChooser.visible;
-                    if (groupWindowChooser.visible) {
+                    root.toggleGroupChooser(delegateRoot);
+                    if (root.groupVisualParent === delegateRoot) {
                         root.logInfo("window-chooser-opened", { childCount: childCount });
                     }
                     return;
@@ -362,37 +412,23 @@ PlasmoidItem {
                 }
             }
 
-            GroupWindowChooser {
-                id: groupWindowChooser
-
-                visualParent: delegateRoot
-                taskModel: taskModel
-                parentIndex: delegateRoot.index
-                groupTitle: String(delegateRoot.model.display || "")
-                vertical: root.vertical
-
-                onActivateRequested: childIndex => {
-                    root.runAction(
-                        "activate-group-window",
-                        () => taskModel.requestActivate(childIndex)
-                    );
-                }
-
-                onCloseRequested: childIndex => {
-                    root.runAction(
-                        "close-group-window",
-                        () => taskModel.requestClose(childIndex)
-                    );
-                }
-            }
-
             onChildCountChanged: {
-                if (childCount < 2) {
-                    groupWindowChooser.visible = false;
+                if (childCount < 2 && root.groupVisualParent === delegateRoot) {
+                    root.closeGroupChooser();
                 }
             }
 
-            onModelChanged: groupWindowChooser.visible = false
+            onModelChanged: {
+                if (root.groupVisualParent === delegateRoot) {
+                    root.closeGroupChooser();
+                }
+            }
+
+            onIndexChanged: {
+                if (root.groupVisualParent === delegateRoot) {
+                    root.groupParentIndex = index;
+                }
+            }
 
             function playLaunchReaction() {
                 // Do not bounce when merely switching to an already-running window.

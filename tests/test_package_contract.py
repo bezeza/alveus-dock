@@ -143,7 +143,9 @@ class PackageContractTests(unittest.TestCase):
 
     def test_group_parent_has_window_count_badge_and_chooser(self):
         self.assertIn("delegateRoot.model.IsGroupParent", self.qml)
-        self.assertIn("groupWindowChooser.visible = !groupWindowChooser.visible", self.qml)
+        self.assertIn("root.toggleGroupChooser(delegateRoot)", self.qml)
+        self.assertIn("id: groupWindowChooser", self.qml)
+        self.assertIn("root.groupVisualParent === delegateRoot", self.qml)
         self.assertIn("id: windowCountBadge", self.qml)
         self.assertIn("delegateRoot.childCount > 1", self.qml)
         self.assertIn('qsTr("Ungroup windows")', self.qml)
@@ -157,7 +159,7 @@ class PackageContractTests(unittest.TestCase):
     def test_group_chooser_closes_when_delegate_is_recycled(self):
         pooled = self.qml.find("ListView.onPooled")
         reused = self.qml.find("ListView.onReused")
-        self.assertIn("groupWindowChooser.visible = false", self.qml[pooled:reused])
+        self.assertIn("root.closeGroupChooser()", self.qml[pooled:reused])
 
     def test_group_actions_are_logged(self):
         self.assertIn('"activate-group-window"', self.qml)

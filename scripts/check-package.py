@@ -34,6 +34,7 @@ required = [
     "scripts/profile-plasmashell.py",
     "CHANGELOG.md",
     "package/contents/ui/main.qml",
+    "package/contents/ui/GroupWindowChooser.qml",
     "package/contents/config/config.qml",
     "package/contents/config/ConfigAppearance.qml",
     "package/contents/config/ConfigBehavior.qml",
@@ -60,6 +61,12 @@ for token in [
     "requestActivate",
     "requestToggleMinimized",
     "requestPublishDelegateGeometry",
+    "groupApplications",
+    "GroupApplications",
+    "GroupWindowChooser",
+    "groupWindowChooser",
+    "windowCountBadge",
+    "requestToggleGrouping",
     "mapToGlobal(0, 0)",
     "publishIconGeometry",
     "requestAddLauncher",
@@ -90,6 +97,7 @@ for token in [
 
 for relative in [
     "package/contents/ui/main.qml",
+    "package/contents/ui/GroupWindowChooser.qml",
     "package/contents/config/config.qml",
     "package/contents/config/ConfigAppearance.qml",
     "package/contents/config/ConfigBehavior.qml",
@@ -98,7 +106,7 @@ for relative in [
     assert "SPDX-License-Identifier: GPL-3.0-only" in source, f"Wrong or missing SPDX header in {relative}"
 
 behavior = (ROOT / "package/contents/config/ConfigBehavior.qml").read_text(encoding="utf-8")
-for token in ["cfg_enableAttentionReaction", "cfg_enableDragReorder"]:
+for token in ["cfg_enableAttentionReaction", "cfg_enableDragReorder", "cfg_groupApplications"]:
     assert token in behavior, f"Missing setting: {token}"
 
 for dependency in [

@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ET
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 QML_PATH = ROOT / "package/contents/ui/main.qml"
+GROUP_CHOOSER_PATH = ROOT / "package/contents/ui/GroupWindowChooser.qml"
 CONFIG_XML_PATH = ROOT / "package/contents/config/main.xml"
 APP_CONFIG_PATHS = [
     ROOT / "package/contents/config/ConfigAppearance.qml",
@@ -22,6 +23,7 @@ class PackageContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.qml = QML_PATH.read_text(encoding="utf-8")
+        cls.group_chooser = GROUP_CHOOSER_PATH.read_text(encoding="utf-8")
         cls.metadata = json.loads((ROOT / "package/metadata.json").read_text(encoding="utf-8"))
         cls.spec = (ROOT / "packaging/alveus-dock.spec").read_text(encoding="utf-8")
         cls.kcfg = ET.parse(CONFIG_XML_PATH).getroot()
@@ -112,6 +114,55 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("Number.isInteger(sourceIndex)", self.qml)
         self.assertIn("sourceIndex >= taskModel.count", self.qml)
         self.assertIn("targetIndex >= taskModel.count", self.qml)
+
+    def test_grouping_setting_uses_native_tasks_model(self):
+        entry = self.kcfg.find(f".//{KCFG_NS}entry[@name='groupApplications']")
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.attrib["type"], "Bool")
+        self.assertEqual(entry.find(f"{KCFG_NS}default").text, "false")
+        self.assertIn("cfg_groupApplications", self.config_qml)
+        self.assertIn("id: groupApplications", self.config_qml)
+        self.assertIn("TaskManager.TasksModel.GroupApplications", self.qml)
+        self.assertIn("TaskManager.TasksModel.GroupDisabled", self.qml)
+        self.assertIn("groupMode: Plasmoid.configuration.groupApplications", self.qml)
+
+    def test_group_chooser_uses_hierarchical_task_model(self):
+        self.assertIn("DelegateModel", self.group_chooser)
+        self.assertIn(
+            "rootIndex: chooser.taskModel.makeModelIndex(chooser.parentIndex)",
+            self.group_chooser,
+        )
+        self.assertIn(
+            "taskModel.makeModelIndex(parentIndex, childRow)",
+            self.group_chooser,
+        )
+        self.assertIn("signal activateRequested(var childIndex)", self.group_chooser)
+        self.assertIn("signal closeRequested(var childIndex)", self.group_chooser)
+        self.assertIn("chooser.activateRequested(childIndex)", self.group_chooser)
+        self.assertIn("chooser.closeRequested(childIndex)", self.group_chooser)
+
+    def test_group_parent_has_window_count_badge_and_chooser(self):
+        self.assertIn("delegateRoot.model.IsGroupParent", self.qml)
+        self.assertIn("groupWindowChooser.visible = !groupWindowChooser.visible", self.qml)
+        self.assertIn("id: windowCountBadge", self.qml)
+        self.assertIn("delegateRoot.childCount > 1", self.qml)
+        self.assertIn('qsTr("Ungroup windows")', self.qml)
+
+    def test_grouped_windows_keep_kde_minimize_geometry(self):
+        self.assertIn(
+            "!delegateRoot.model.IsWindow && !delegateRoot.model.IsGroupParent",
+            self.qml,
+        )
+
+    def test_group_chooser_closes_when_delegate_is_recycled(self):
+        pooled = self.qml.find("ListView.onPooled")
+        reused = self.qml.find("ListView.onReused")
+        self.assertIn("groupWindowChooser.visible = false", self.qml[pooled:reused])
+
+    def test_group_actions_are_logged(self):
+        self.assertIn('"activate-group-window"', self.qml)
+        self.assertIn('"close-group-window"', self.qml)
+        self.assertIn('"ungroup-windows"', self.qml)
 
     def test_kde_minimize_effect_geometry_is_published(self):
         self.assertIn("function globalRect(item)", self.qml)

@@ -160,7 +160,9 @@ PlasmoidItem {
         filterByScreen: Plasmoid.configuration.currentScreenOnly
 
         // KDE owns task discovery, launcher matching and window activation.
-        groupMode: TaskManager.TasksModel.GroupDisabled
+        groupMode: Plasmoid.configuration.groupApplications
+            ? TaskManager.TasksModel.GroupApplications
+            : TaskManager.TasksModel.GroupDisabled
         sortMode: TaskManager.TasksModel.SortManual
         separateLaunchers: false
         launchInPlace: true
@@ -256,6 +258,11 @@ PlasmoidItem {
             property real launchScale: 1.0
             property bool hovered: false
             property bool demandingAttention: !!model.IsDemandingAttention
+            readonly property int childCount: Number(model.ChildCount || 0)
+
+            Accessible.name: String(model.display || "")
+                + (model.IsGroupParent ? qsTr(", %1 windows").arg(childCount) : "")
+            Accessible.role: Accessible.Button
 
             width: root.itemExtent
             height: root.itemExtent
@@ -281,6 +288,7 @@ PlasmoidItem {
                 attentionRing.opacity = 0;
                 attentionRing.scale = 0.8;
                 contextMenu.close();
+                groupWindowChooser.visible = false;
             }
 
             ListView.onReused: {
@@ -300,7 +308,7 @@ PlasmoidItem {
             function publishIconGeometry() {
                 if (!delegateRoot.visible
                         || !delegateRoot.model
-                        || !delegateRoot.model.IsWindow
+                        || (!delegateRoot.model.IsWindow && !delegateRoot.model.IsGroupParent)
                         || delegateRoot.model.IsLauncher
                         || delegateRoot.model.IsStartup) {
                     return;
@@ -337,6 +345,14 @@ PlasmoidItem {
             function activateTask() {
                 const idx = modelIndex();
 
+                if (model.IsGroupParent) {
+                    groupWindowChooser.visible = !groupWindowChooser.visible;
+                    if (groupWindowChooser.visible) {
+                        root.logInfo("window-chooser-opened", { childCount: childCount });
+                    }
+                    return;
+                }
+
                 if (model.IsWindow && model.IsActive) {
                     // Refresh the target immediately before asking KWin to minimize.
                     publishIconGeometry();
@@ -345,6 +361,38 @@ PlasmoidItem {
                     root.runAction("activate-window", () => taskModel.requestActivate(idx));
                 }
             }
+
+            GroupWindowChooser {
+                id: groupWindowChooser
+
+                visualParent: delegateRoot
+                taskModel: taskModel
+                parentIndex: delegateRoot.index
+                groupTitle: String(delegateRoot.model.display || "")
+                vertical: root.vertical
+
+                onActivateRequested: childIndex => {
+                    root.runAction(
+                        "activate-group-window",
+                        () => taskModel.requestActivate(childIndex)
+                    );
+                }
+
+                onCloseRequested: childIndex => {
+                    root.runAction(
+                        "close-group-window",
+                        () => taskModel.requestClose(childIndex)
+                    );
+                }
+            }
+
+            onChildCountChanged: {
+                if (childCount < 2) {
+                    groupWindowChooser.visible = false;
+                }
+            }
+
+            onModelChanged: groupWindowChooser.visible = false
 
             function playLaunchReaction() {
                 // Do not bounce when merely switching to an already-running window.
@@ -377,6 +425,29 @@ PlasmoidItem {
                         duration: 135
                         easing.type: Easing.OutCubic
                     }
+                }
+            }
+
+            // Count badge makes grouped windows visible without changing the icon.
+            Rectangle {
+                id: windowCountBadge
+
+                visible: !!delegateRoot.model.IsGroupParent && delegateRoot.childCount > 1
+                width: Math.max(17, badgeText.implicitWidth + 8)
+                height: 17
+                radius: height / 2
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                color: Kirigami.Theme.textColor
+                z: 4
+
+                Text {
+                    id: badgeText
+                    anchors.centerIn: parent
+                    text: delegateRoot.childCount
+                    color: Kirigami.Theme.backgroundColor
+                    font.pixelSize: 10
+                    font.bold: true
                 }
             }
 
@@ -554,7 +625,9 @@ PlasmoidItem {
                 }
 
                 Controls.ToolTip.visible: containsMouse
-                Controls.ToolTip.text: delegateRoot.model.display
+                Controls.ToolTip.text: delegateRoot.model.IsGroupParent
+                    ? qsTr("%1 windows").arg(delegateRoot.model.display)
+                    : delegateRoot.model.display
                 Controls.ToolTip.delay: 450
             }
 
@@ -587,6 +660,15 @@ PlasmoidItem {
                     onTriggered: root.runAction(
                         "new-instance",
                         () => taskModel.requestNewInstance(delegateRoot.modelIndex())
+                    )
+                }
+
+                Controls.MenuItem {
+                    text: qsTr("Ungroup windows")
+                    visible: !!delegateRoot.model.IsGroupParent
+                    onTriggered: root.runAction(
+                        "ungroup-windows",
+                        () => taskModel.requestToggleGrouping(delegateRoot.modelIndex())
                     )
                 }
 

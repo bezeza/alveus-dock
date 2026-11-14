@@ -26,29 +26,26 @@ jobs:
           mkdir -p /tmp/alveus-dock-import
           python3 - <<'PY'
           from pathlib import Path
-          import struct
-          b = Path("migration/alveus-dock-0.1.2-source.zip").read_bytes()
-          print("SIZE", len(b), "HEAD", b[:16].hex(), "TAIL", b[-32:].hex())
-          for sig in (bytes.fromhex("504b0304"), bytes.fromhex("504b0102"), bytes.fromhex("504b0506")):
-              pos=[]; i=0
-              while True:
-                  i=b.find(sig,i)
-                  if i<0: break
-                  pos.append(i); i+=1
-              print("SIG", sig.hex(), pos[:100], "COUNT", len(pos))
-          eocd=b.rfind(bytes.fromhex("504b0506"))
-          if eocd>=0:
-              fields=struct.unpack_from("<4s4H2LH",b,eocd)
-              print("EOCD", fields, "at", eocd)
-              cd_offset=fields[6]; cd_size=fields[5]
-              print("CENTRAL_EXPECTED",cd_offset,cd_size,"BYTES",b[cd_offset:cd_offset+32].hex())
-              for delta in range(-32,33):
-                  off=cd_offset+delta
-                  if b[off:off+4]==bytes.fromhex("504b0102"):
-                      print("CENTRAL_FOUND_DELTA",delta,"OFFSET",off)
+          import struct, zipfile
+          archive = Path("migration/alveus-dock-0.1.2-source.zip")
+          data = bytearray(archive.read_bytes())
+          eocd = data.rfind(bytes.fromhex("504b0506"))
+          central = data.find(bytes.fromhex("504b0102"))
+          if eocd < 0 or central < 0:
+              raise SystemExit("ZIP signatures missing; archive cannot be repaired safely")
+          # The legacy snapshot's EOCD central-directory offset and size are both off by 18 bytes.
+          central_size = eocd - central
+          struct.pack_into("<L", data, eocd + 12, central_size)
+          struct.pack_into("<L", data, eocd + 16, central)
+          archive.write_bytes(data)
+          with zipfile.ZipFile(archive) as zf:
+              names = zf.namelist()
+              print("REPAIRED_ENTRIES", len(names), names)
+              bad = zf.testzip()
+              if bad:
+                  raise SystemExit(f"CRC check failed: {bad}")
+              zf.extractall("/tmp/alveus-dock-import")
           PY
-          unzip -t migration/alveus-dock-0.1.2-source.zip || true
-          unzip -q migration/alveus-dock-0.1.2-source.zip -d /tmp/alveus-dock-import
           test -d /tmp/alveus-dock-import/alveus-dock
           cp -a /tmp/alveus-dock-import/alveus-dock/. .
           rm -rf migration

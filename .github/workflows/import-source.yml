@@ -25,28 +25,26 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          import struct, zlib
-          b = Path("migration/alveus-dock-0.1.2-source.zip").read_bytes()
-          pos = 0
-          while b[pos:pos+4] == bytes.fromhex("504b0304"):
-              fields = struct.unpack_from("<HHHHHIIIHH", b, pos+4)
-              version, flags, method, mt, md, crc, csize, usize, nlen, elen = fields
-              name = b[pos+30:pos+30+nlen].decode("utf-8", "replace")
-              start = pos+30+nlen+elen
-              payload = b[start:start+csize]
-              print("ENTRY", name, "offset", pos, "flags", flags, "method", method, "csize", csize, "usize", usize, "start", start, "head", payload[:12].hex())
-              try:
-                  raw = zlib.decompress(payload, -15) if method == 8 else payload
-                  print(" OK", len(raw), hex(zlib.crc32(raw)&0xffffffff), "expected", hex(crc))
-              except Exception as e:
-                  print(" FAIL", repr(e))
-                  for delta in range(-8,9):
-                      p=start+delta
-                      try:
-                          raw=zlib.decompress(b[p:p+csize],-15)
-                          print(" OFFSET_CANDIDATE",delta,len(raw),hex(zlib.crc32(raw)&0xffffffff))
-                      except Exception: pass
-              pos=start+csize
+          import struct
+          b=Path("migration/alveus-dock-0.1.2-source.zip").read_bytes()
+          pos=0
+          print("LOCAL RECORDS")
+          while b[pos:pos+4]==bytes.fromhex("504b0304"):
+              v,flags,method,mt,md,crc,cs,us,nl,el=struct.unpack_from("<HHHHHIIIHH",b,pos+4)
+              name=b[pos+30:pos+30+nl]
+              start=pos+30+nl+el
+              print(pos, "flags",flags,"method",method,"csize",cs,"usize",us,"name_len",nl,"name",repr(name),"data",b[start:start+16].hex(),"next",start+cs)
+              pos=start+cs
+          print("LOCAL_STOP",pos,"NEXT",b[pos:pos+16].hex())
+          pos=b.find(bytes.fromhex("504b0102"))
+          print("CENTRAL RECORDS")
+          while b[pos:pos+4]==bytes.fromhex("504b0102"):
+              vals=struct.unpack_from("<4s6H3I5H2I",b,pos)
+              _,made,need,flags,method,mt,md,crc,cs,us,nl,el,cl,disk,ia,ea,lo=vals
+              name=b[pos+46:pos+46+nl]
+              print(pos,"flags",flags,"method",method,"csize",cs,"usize",us,"name_len",nl,"extra",el,"comment",cl,"local_offset",lo,"name",repr(name))
+              pos += 46+nl+el+cl
+          print("CENTRAL_STOP",pos,"TAIL",b[pos:pos+32].hex())
           PY
           false
 

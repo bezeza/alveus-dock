@@ -1,114 +1,163 @@
 # Alveus Dock
 
-A small standalone KDE Plasma 6 dock applet, initially targeting Fedora KDE
-Plasma 6.8.x. It uses KDE's own task/window infrastructure and does not patch
-or replace the stock Icons-Only Task Manager.
+[![RPM build](https://github.com/bezeza/alveus-dock/actions/workflows/build-rpm.yml/badge.svg)](https://github.com/bezeza/alveus-dock/actions/workflows/build-rpm.yml)
+[![License: GPL-3.0-only](https://img.shields.io/badge/License-GPL--3.0--only-blue.svg)](LICENSE)
 
-## Version 0.1.2 — source prototype
+Alveus Dock is a lightweight, standalone dock applet for KDE Plasma 6. It uses KDE's native TaskManager model for pinned launchers and running windows, then adds compact controls and short, configurable icon reactions.
 
-Includes:
+It is an independent applet, not a patch or replacement for KDE's Icons-Only Task Manager. It can be used on its own or alongside other Plasma panel widgets.
 
-- pinned launchers and running windows through `org.kde.taskmanager`;
-- activate a window, or minimize it when clicking its active icon;
-- middle-click to request a new application instance;
-- right-click to pin/unpin, start another instance, or close a window;
-- drag an icon onto another icon to reorder tasks;
-- drop `.desktop` / `applications:` launchers anywhere on the Dock to pin them;
-- drop ordinary files onto a running app icon to open them with that app;
-- adjustable icon size, spacing and hover scale;
-- finite elastic launch reaction and energy ring;
-- finite attention pulse when an application demands attention;
-- privacy-conscious diagnostics in the KDE/Qt journal;
-- a script to collect Alveus Dock and relevant Plasma/QML log records;
-- active-window marker and startup busy indicator;
-- current-desktop and current-screen filters;
-- no background daemon; KWin effects such as Magic Lamp remain KDE's job.
+> **Project status:** early prototype. The source and RPM packaging are in the repository, but a live Plasma 6.8 runtime test and real screenshots are still pending. CI checks do not replace testing in a running desktop session.
 
-## Target platform
+## Features
 
-- Fedora KDE
-- First runtime validation target: KDE Plasma 6.8.2
-- Plasma 6.0+ metadata/API baseline, subject to runtime testing
+### Launchers and windows
+- Pinned application launchers and running windows in one dock.
+- Left-click activates a window; clicking the already-active window requests minimization.
+- Middle-click requests a new application instance.
+- Right-click offers pin/unpin, new instance and close actions.
+- Drag icons to reorder tasks.
+- Drop .desktop files or applications: URLs on the dock to pin launchers.
+- Drop files onto a running application icon to open them with that application.
+- Optional filtering to the current virtual desktop and current screen.
 
-## Local test install
+### Motion and visual feedback
+- Smooth hover scaling.
+- Short elastic launch reaction.
+- Expanding energy ring on launch.
+- Finite attention pulse when an application requests attention.
+- Active-window marker and startup busy indicator.
+- Animations are event-driven and finite. There is no permanent animation loop.
 
-```bash
-bash scripts/install-local.sh
-```
+KWin effects such as Magic Lamp remain KDE/KWin features and are not reimplemented by Alveus Dock.
 
-Then open the panel's **Add Widgets** menu and add **Alveus Dock**.
+### Settings
+- Icon size, spacing and hover scale.
+- Optional floating background.
+- Active-window indicator.
+- Launch bounce and energy pulse toggles.
+- Attention reaction toggle.
+- Drag-to-reorder toggle.
+- Current-desktop and current-screen filters.
 
-Remove:
+### Diagnostics
+- Structured INFO, WARN and ERROR messages in the Plasma/Qt journal.
+- A log collector for Alveus Dock and relevant Plasma/QML warnings.
+- Logs intentionally avoid application names, window titles, file paths and dropped URLs.
 
-```bash
-bash scripts/uninstall-local.sh
-```
+See **docs/LOGGING.md**.
 
-## Build an RPM on Fedora
+## Screenshots
 
-```bash
+Real screenshots have not been captured yet because the applet has not been run in a live KDE Plasma session. We will add screenshots after the first Fedora KDE runtime test rather than presenting a mockup as a real application screenshot.
+
+See the **docs/SCREENSHOTS.md** capture checklist.
+
+## Supported platform
+
+- KDE Plasma 6.8 or newer.
+- Fedora 44 or newer is the current RPM target.
+- Wayland and X11 compatibility still need separate runtime verification.
+- Windows is out of scope. Alveus Dock is a Plasma applet, not a cross-platform dock.
+
+The RPM declares Plasma 6.8 as its minimum because the current development target is Plasma 6.8.x. Fedora 43 packages may carry an older Plasma version and therefore may not satisfy the dependency.
+
+## Install on Fedora
+
+### Install a locally built RPM
+
+Install the build tools:
+
+~~~bash
 sudo dnf install rpm-build rpmdevtools
-bash scripts/build-rpm.sh
-```
+~~~
 
-Install a local build:
+Build and install:
 
-```bash
-sudo dnf install ./rpmbuild/RPMS/noarch/alveus-dock-*.rpm
-```
-
-Remove:
-
-```bash
-sudo dnf remove alveus-dock
-```
-
-The RPM spec declares runtime dependencies for Plasma, KCMUtils, Kirigami and
-Qt Quick. Exact dependency names still need verification on the target Fedora
-release before publishing.
-
-## COPR
-
-The RPM spec and COPR notes are in `packaging/`. No COPR repository has been
-created or published yet. After a successful Plasma runtime test, the intended
-installation will be:
-
-```bash
-sudo dnf copr enable OWNER/alveus-dock
-sudo dnf install alveus-dock
-```
-
-## Project history and diagnostics
-
-- `CHANGELOG.md` — release-by-release changes.
-- `docs/DEVELOPMENT_LOG.md` — dated development record and validation status.
-- `docs/ROADMAP.md` — milestones, checklists and release criteria.
-- `docs/LOGGING.md` — live journal viewing and log collection.
-
-Collect a diagnostic file with `bash scripts/collect-logs.sh`.
-It is saved under `~/.local/state/alveus-dock/logs/`. Review it before sharing.
-
-## Validation status
-
-Structural checks cover metadata JSON, KConfig XML, expected QML features and
-RPM spec dependencies:
-
-```bash
+~~~bash
 python3 scripts/check-package.py
-```
+bash scripts/build-rpm.sh
+sudo dnf install ./rpmbuild/RPMS/noarch/alveus-dock-*.rpm
+~~~
 
-This does not compile QML or verify Plasma runtime behavior. Before release,
-run `qmllint` with Plasma 6.8 QML modules available and test the applet in a
-separate Plasma user session. This archive has not been run on the user's PC.
+After installation, open the panel's **Add Widgets** menu and add **Alveus Dock**.
 
-## Layout
+Remove it with:
 
-- `package/contents/ui/` — applet UI
-- `package/contents/config/` — settings
-- `packaging/` — Fedora RPM and COPR notes
-- `.github/workflows/` — RPM build workflow
-- `scripts/` — checks and local packaging helpers
+~~~bash
+sudo dnf remove alveus-dock
+~~~
+
+### Install from a DNF repository
+
+The project does **not** have a published COPR repository yet, so the short command below is not active:
+
+~~~bash
+sudo dnf install alveus-dock
+~~~
+
+It will become available after a COPR project is created, the RPM is tested on a clean Fedora KDE installation, and the repository owner is added to **packaging/COPR.md**. Until then, use the local RPM instructions above or download the RPM artifact from GitHub Actions.
+
+## Local development install
+
+Install the KPackage command if it is not already present:
+
+~~~bash
+sudo dnf install kf6-kpackage
+~~~
+
+Install the applet for the current user:
+
+~~~bash
+bash scripts/install-local.sh
+~~~
+
+Remove the development install:
+
+~~~bash
+bash scripts/uninstall-local.sh
+~~~
+
+## Build and validation
+
+Run the structural checks:
+
+~~~bash
+python3 scripts/check-package.py
+~~~
+
+Build the RPM:
+
+~~~bash
+bash scripts/build-rpm.sh
+~~~
+
+GitHub Actions runs the structural checks, QML lint and RPM build on pushes, pull requests, tags and manual dispatch. The resulting RPM is uploaded as a workflow artifact.
+
+A successful CI build confirms package structure and buildability. It does **not** prove that every interaction works in a live Plasma session.
+
+## Repository map
+
+- **package/** - Plasma applet metadata, QML UI and settings.
+- **packaging/** - Fedora RPM spec and COPR publication notes.
+- **scripts/** - local install, uninstall, checks, RPM build and log collection.
+- **docs/ROADMAP.md** - future work only.
+- **docs/DEVELOPMENT_LOG.md** - dated engineering record.
+- **CHANGELOG.md** - user-visible changes by version.
+- **AGENTS.md** - rules for AI coding agents and contributors.
+
+The roadmap, development log and changelog serve different purposes and must not be merged into one document.
+
+## Project principles
+
+- Use KDE/Plasma APIs for tasks, launchers and window actions.
+- Keep the applet standalone and lightweight.
+- Do not modify the stock Icons-Only Task Manager.
+- Do not add a background daemon without a measured need.
+- Prefer short, interruptible, event-driven animations.
+- Keep diagnostic logs useful without recording private window or file data.
+- Do not publish a package before runtime testing.
 
 ## License
 
-GPL-2.0-or-later.
+Alveus Dock is licensed under **GNU GPL-3.0-only**. See **LICENSE**.

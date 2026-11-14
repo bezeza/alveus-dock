@@ -1,96 +1,75 @@
 # Alveus Dock — Roadmap
 
-**Product goal:** a small, responsive, standalone KDE Plasma dock for Fedora
-KDE. It should feel more expressive than Icons-Only Task Manager without
-becoming a resource-heavy desktop environment of its own.
+This document contains **future work only**. Completed changes belong in CHANGELOG.md; dated engineering activity belongs in DEVELOPMENT_LOG.md.
 
-**Design rules**
-- Use KDE/Plasma APIs for windows, launchers and KWin effects.
-- Keep the applet standalone; do not patch the stock Task Manager.
-- No resident daemon unless a measured feature absolutely requires one.
-- Prefer event-driven animations; no infinite animation loops.
-- Keep logs privacy-conscious and useful for debugging.
-- Do not publish a Fedora COPR package before real runtime testing.
+## Product direction
 
-## Release status
+Build a small, responsive KDE Plasma dock that feels more expressive than Icons-Only Task Manager without becoming a resource-heavy desktop environment of its own.
 
-| Version | Scope | Status |
-|---|---|---|
-| 0.1.0 | Standalone applet skeleton, basic tasks and RPM layout | Source prepared; runtime test pending |
-| 0.1.1 | Drag/drop and first interactions | Prototype; runtime test pending |
-| 0.1.2 | Diagnostics, project logs, roadmap and static fixes | Source prepared; runtime test pending |
-| 0.2.0 | Grouped windows and window chooser | Planned |
-| 0.3.0 | Signature animations and motion settings | Planned |
-| 0.4.0 | Stability, performance, accessibility and packaging | Planned |
-| 1.0.0 | First stable Fedora release | Not started |
+## Next: 0.1.x stabilization
 
-## 0.1.x — foundation and observability
+- [ ] Run the applet in a clean Fedora 44 KDE Plasma 6.8.x session.
+- [ ] Resolve all QML parser, import and runtime warnings.
+- [ ] Verify launcher pinning, unpinning and persistence after Plasma restart.
+- [ ] Verify activation, minimizing, close and new-instance actions.
+- [ ] Verify internal drag/reorder and external .desktop launcher drops.
+- [ ] Verify file drops onto running application windows.
+- [ ] Verify current-desktop and current-screen filters.
+- [ ] Verify appearance and behavior settings persist after logout/login.
+- [ ] Test install, upgrade and removal using the built RPM.
+- [ ] Confirm package dependencies on a clean Fedora installation.
+- [ ] Capture genuine application screenshots for the README.
 
-- [x] Standalone Plasma applet package structure.
-- [x] KDE TaskManager model integration prototype.
-- [x] Basic activate/minimize/close and launcher actions.
-- [x] First finite launch and attention reactions.
-- [x] RPM spec and CI workflow skeleton.
-- [x] Changelog and development journal.
-- [x] Runtime diagnostic messages and journal collector.
-- [ ] QML lint and real Plasma 6.8.2 runtime validation.
-- [ ] Verify task drag/reorder and external launcher drops.
-- [ ] Verify install, upgrade and removal using a built RPM.
-- [ ] Confirm Fedora runtime dependency names.
+**Exit criteria:** the core interactions work without QML runtime errors; the applet installs and removes cleanly; no critical performance regression is observed.
 
-**Exit criteria:** no QML runtime errors in the core flows; applet can be
-installed and removed cleanly; logs can identify a failed action without
-recording private window or file data.
+## 0.2.0 — window and task experience
 
-## 0.2.0 — task and window experience
-
-- [ ] Group multiple windows from the same application.
-- [ ] Show a compact window chooser when a grouped icon is clicked.
-- [ ] Add window previews on hover, using KDE-supported APIs.
-- [ ] Show a count indicator for multiple windows.
+- [ ] Add optional grouping of windows from the same application.
+- [ ] Add a compact window chooser for grouped tasks.
+- [ ] Evaluate KDE-supported window previews on hover.
+- [ ] Add a window-count indicator.
 - [ ] Improve keyboard navigation and focus handling.
 - [ ] Verify task switching across virtual desktops and monitors.
 
-**Exit criteria:** grouping, choosing, activating and closing windows works
-without stale delegates, wrong-window activation or excessive CPU usage.
+**Exit criteria:** grouping, choosing, activating and closing windows works without stale delegates, wrong-window activation or excessive CPU usage.
 
 ## 0.3.0 — Alveus motion identity
 
-- [ ] Liquid-style active-window indicator.
-- [ ] Magnetic spacing between nearby icons.
-- [ ] Short domino/wave reaction on application launch.
-- [ ] Optional bounce, pulse and attention effects.
-- [ ] Reduced-motion mode and per-effect toggles.
-- [ ] Tune all effects for low CPU/GPU overhead.
+- [ ] Add a liquid-style active-window indicator.
+- [ ] Evaluate magnetic spacing between nearby icons.
+- [ ] Add a short domino/wave reaction on application launch.
+- [ ] Add optional per-effect controls for bounce, pulse and attention reactions.
+- [ ] Add a reduced-motion mode.
+- [ ] Tune effects for low CPU/GPU overhead and interruptibility.
 
-**Exit criteria:** effects are finite, interruptible, respect reduced-motion
-settings and do not cause visible lag during normal desktop use.
+**Exit criteria:** all effects are finite, interruptible, respect reduced-motion settings and do not cause visible lag during normal desktop use.
 
 ## 0.4.0 — polish and compatibility
 
-- [ ] Finish horizontal and vertical layouts.
-- [ ] Test Wayland and X11 where supported.
-- [ ] Test multiple monitors, fractional scaling and panel edge placement.
+- [ ] Finish horizontal and vertical layout behavior.
+- [ ] Test Wayland and X11 separately where supported.
+- [ ] Test multiple monitors, fractional scaling and panel-edge placement.
 - [ ] Test Plasma restart, logout/login and configuration persistence.
 - [ ] Complete English, Ukrainian and Russian translations.
-- [ ] Add application icon, screenshots and user documentation.
-- [ ] Verify clean install, upgrade, downgrade policy and removal.
-- [ ] Verify RPM dependencies on the target Fedora release.
+- [ ] Add verified screenshots, icon assets and user documentation.
+- [ ] Verify clean install, upgrade and removal paths.
+- [ ] Document supported Fedora/Plasma combinations.
 
-**Exit criteria:** repeatable test checklist passes on the supported Fedora
-Plasma target and no known critical defects remain.
+**Exit criteria:** the published compatibility matrix matches real test results and no known critical defects remain.
 
-## 1.0.0 — stable Fedora package
+## 1.0.0 — stable Fedora release
 
 - [ ] Tag a stable release.
-- [ ] Build RPM in CI.
-- [ ] Test package in a clean Fedora KDE environment.
-- [ ] Publish COPR repository and exact DNF commands.
-- [ ] Publish release notes and troubleshooting guide.
+- [ ] Build and verify RPMs in CI.
+- [ ] Test the package in a clean Fedora KDE environment.
+- [ ] Create and publish the COPR repository.
+- [ ] Verify the public DNF installation and removal commands.
+- [ ] Publish release notes and a troubleshooting guide.
 
-## Explicitly out of scope for the first release
+## Explicit non-goals for the first stable release
 
 - Windows support.
-- A Rust daemon or separate background service.
+- A Rust daemon or separate resident background service.
 - Replacing KWin or reimplementing KDE window effects.
-- Bundling a full desktop shell or application launcher.
+- Bundling a desktop shell or a second application launcher.
+- Patching the stock Icons-Only Task Manager.

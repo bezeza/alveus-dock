@@ -1,25 +1,33 @@
 # Fedora COPR publication
 
-The project has a noarch RPM spec but is not published to COPR yet.
+The RPM spec and GitHub Actions build are prepared, but Alveus Dock is **not published to COPR yet**. The owner name and repository URL must not be guessed.
 
-After the applet passes a real Plasma 6.8.x runtime test:
+## Before publication
 
-1. Create a COPR project named `alveus-dock`.
-2. Build the source RPM or submit the source archive using `copr-cli`.
-3. Test installation, upgrade and removal in a clean Fedora KDE session.
-4. Publish the exact COPR owner and install instructions only after a successful build.
+1. Confirm the Fedora 44 / KDE Plasma 6.8.x runtime test passes.
+2. Confirm clean install, upgrade and removal using the built RPM.
+3. Create a COPR project named alveus-dock under the actual maintainer account.
+4. Configure COPR credentials as GitHub Actions secrets if automated publishing is desired.
+5. Build and test the package from a tagged release.
+6. Replace OWNER in the commands below with the real COPR owner only after the repository is public.
 
-Expected commands after publication:
+## DNF installation after COPR is published
 
-```bash
+~~~bash
 sudo dnf copr enable OWNER/alveus-dock
 sudo dnf install alveus-dock
-```
+~~~
 
-For a local RPM build:
+## Install a local RPM before COPR publication
 
-```bash
-sudo dnf install ./alveus-dock-0.1.2-1.fc*.noarch.rpm
-```
+~~~bash
+sudo dnf install ./rpmbuild/RPMS/noarch/alveus-dock-*.rpm
+~~~
 
-Do not present the COPR commands as working until the repository exists.
+Remove the package with:
+
+~~~bash
+sudo dnf remove alveus-dock
+~~~
+
+Do not present the COPR commands as working until the repository exists and the package has passed runtime testing.

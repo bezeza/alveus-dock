@@ -1,0 +1,64 @@
+name: Build RPM
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Validate and build Fedora RPM
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:44
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install build and QML dependencies
+        run: |
+          dnf install -y \
+            rpm-build rpmdevtools python3 tar gzip \
+            qt6-qtdeclarative-devel \
+            plasma-workspace plasma-workspace-libs libplasma \
+            kf6-kcmutils kf6-kirigami
+
+      - name: Run structural checks
+        run: python3 scripts/check-package.py
+
+      - name: Lint QML
+        run: |
+          export QML_IMPORT_PATH=/usr/lib64/qt6/qml
+          qmllint -I /usr/lib64/qt6/qml \
+            package/contents/ui/main.qml \
+            package/contents/config/config.qml \
+            package/contents/config/ConfigAppearance.qml \
+            package/contents/config/ConfigBehavior.qml
+
+      - name: Build RPM
+        run: bash scripts/build-rpm.sh
+
+      - name: Verify RPM package
+        shell: bash
+        run: |
+          set -euo pipefail
+          rpm_file="$(find rpmbuild/RPMS/noarch -maxdepth 1 -name '*.rpm' -print -quit)"
+          test -n "$rpm_file"
+          rpm -qp "$rpm_file"
+          rpm -qpl "$rpm_file"
+          rpm -qp --requires "$rpm_file"
+
+      - name: Upload RPM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: alveus-dock-rpm
+          path: rpmbuild/RPMS/noarch/*.rpm
+          if-no-files-found: error

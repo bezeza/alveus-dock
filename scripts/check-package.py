@@ -1,41 +1,63 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-only
 """Structural checks; not a substitute for qmllint or a live Plasma test."""
 import json
 import pathlib
+import re
 import xml.etree.ElementTree as ET
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 APPLET_ID = "org.bezeza.alveusdock"
+EXPECTED_LICENSE = "GPL-3.0-only"
 
 metadata = json.loads((ROOT / "package/metadata.json").read_text(encoding="utf-8"))
+spec = (ROOT / "packaging/alveus-dock.spec").read_text(encoding="utf-8")
+version = metadata["KPlugin"]["Version"]
+spec_version = re.search(r"^Version:\s+(\S+)", spec, re.MULTILINE)
 assert metadata["KPlugin"]["Id"] == APPLET_ID
 assert metadata["KPackageStructure"] == "Plasma/Applet"
+assert metadata["KPlugin"]["License"] == EXPECTED_LICENSE
+assert spec_version and spec_version.group(1) == version, "RPM and applet versions differ"
+assert re.search(r"^License:\s+GPL-3\.0-only$", spec, re.MULTILINE)
+license_text = (ROOT / "LICENSE").read_text(encoding="utf-8")
+assert "GNU GENERAL PUBLIC LICENSE" in license_text
+assert "Version 3, 29 June 2007" in license_text
 
 required = [
+    "AGENTS.md",
+    "README.md",
+    "CHANGELOG.md",
     "package/contents/ui/main.qml",
     "package/contents/config/config.qml",
     "package/contents/config/ConfigAppearance.qml",
     "package/contents/config/ConfigBehavior.qml",
     "package/contents/config/main.xml",
     "packaging/alveus-dock.spec",
-    "CHANGELOG.md",
+    "packaging/COPR.md",
     "docs/ROADMAP.md",
     "docs/DEVELOPMENT_LOG.md",
     "docs/LOGGING.md",
+    "docs/SCREENSHOTS.md",
+    "scripts/build-rpm.sh",
     "scripts/collect-logs.sh",
+    ".github/workflows/build-rpm.yml",
 ]
 for relative in required:
     assert (ROOT / relative).is_file(), f"Missing {relative}"
 
 ET.parse(ROOT / "package/contents/config/main.xml")
+
 qml = (ROOT / "package/contents/ui/main.qml").read_text(encoding="utf-8")
 for token in [
     "org.kde.taskmanager",
     "TaskManager.TasksModel",
     "requestActivate",
+    "requestToggleMinimized",
     "requestAddLauncher",
     "requestRemoveLauncher",
     "requestOpenUrls",
+    "requestNewInstance",
+    "requestClose",
     "taskModel.move",
     "taskReorderingEnabled",
     "launchBounce",
@@ -53,17 +75,40 @@ for token in [
 ]:
     assert token in qml, f"Missing QML feature: {token}"
 
+for relative in [
+    "package/contents/ui/main.qml",
+    "package/contents/config/config.qml",
+    "package/contents/config/ConfigAppearance.qml",
+    "package/contents/config/ConfigBehavior.qml",
+]:
+    source = (ROOT / relative).read_text(encoding="utf-8")
+    assert "SPDX-License-Identifier: GPL-3.0-only" in source, f"Wrong or missing SPDX header in {relative}"
+
 behavior = (ROOT / "package/contents/config/ConfigBehavior.qml").read_text(encoding="utf-8")
 for token in ["cfg_enableAttentionReaction", "cfg_enableDragReorder"]:
     assert token in behavior, f"Missing setting: {token}"
 
-spec = (ROOT / "packaging/alveus-dock.spec").read_text(encoding="utf-8")
-for dependency in ["plasma-workspace", "libplasma", "kf6-kcmutils", "kf6-kirigami", "qt6-qtdeclarative"]:
+for dependency in [
+    "plasma-workspace >= 6.8.0",
+    "plasma-workspace-libs >= 6.8.0",
+    "libplasma >= 6.8.0",
+    "kf6-kcmutils",
+    "kf6-kirigami",
+    "qt6-qtdeclarative",
+]:
     assert dependency in spec, f"Missing RPM dependency: {dependency}"
+
+build_script = (ROOT / "scripts/build-rpm.sh").read_text(encoding="utf-8")
+assert "0.1.1" not in build_script, "Old hard-coded source version remains"
+assert "$NAME-$VERSION.tar.gz" in build_script
+
+workflow = (ROOT / ".github/workflows/build-rpm.yml").read_text(encoding="utf-8")
+for token in ["qmllint", "scripts/check-package.py", "scripts/build-rpm.sh", "actions/upload-artifact@v4"]:
+    assert token in workflow, f"Missing CI step: {token}"
 
 assert "dropTarget" not in qml, "Stale dropTarget reference remains"
 assert qml.count("DropArea {") == 1
-assert "Version:        0.1.2" in spec
+assert "docs/SCREENSHOTS.md" in (ROOT / "README.md").read_text(encoding="utf-8")
 
-print("Alveus Dock 0.1.2 structural checks: OK")
-print("QML compilation and live Plasma validation are still required.")
+print(f"Alveus Dock {version} structural checks: OK")
+print("QML lint and live Plasma validation are separate required checks.")

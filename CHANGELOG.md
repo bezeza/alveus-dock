@@ -5,6 +5,11 @@ All notable user-visible changes to Alveus Dock are recorded here. This file rec
 ## [Unreleased]
 
 ### Added
+- Configurable Single, Dual and Adaptive layouts.
+- Separate Quick Access and Running Windows layers using KDE's native TaskManager model.
+- Horizontal two-row and vertical two-column arrangements.
+- Configurable spacing between layers; Adaptive hides the running layer when no windows are open.
+- Running-window delegates retain KDE minimize geometry and grouped-window actions.
 - Optional application grouping using KDE's native TaskManager model.
 - Compact Plasma-native window chooser for grouped applications, with per-window activation and close actions.
 - Window-count badge on grouped application icons and an ungroup command in the context menu.

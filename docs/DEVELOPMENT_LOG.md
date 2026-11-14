@@ -2,6 +2,29 @@
 
 This file records dated engineering work. It is not a runtime error log and is not the future roadmap.
 
+## 2026-11-14 — 0.3.0 dual-layer layout implementation
+
+### Implemented
+- Added Single, Dual and Adaptive layout modes, with Single remaining the compatibility default.
+- Added a Layout settings page and configurable spacing between layers.
+- Split the existing KDE TasksModel presentation into Quick Access launchers and Running Windows using Qt DelegateModel groups.
+- Kept KDE as the single source of truth for launchers, windows, grouping, activation and close actions.
+- Extracted the shared task icon delegate into TaskDelegate.qml so the same interaction logic serves every layout.
+- Kept launcher reordering in Quick Access and disabled manual reordering in the running-window layer.
+- Updated drag/drop target resolution to translate filtered view positions back to source TaskManager model indices.
+- Added horizontal two-row and vertical two-column geometry; Adaptive hides the empty running layer.
+
+### Validation
+- GitHub Actions, strict QML lint and Fedora RPM build are pending.
+- A live Plasma session is still required to verify panel thickness, both orientations, launcher persistence, grouped windows and Magic Lamp geometry.
+
+### Next
+- Run all three modes in a live Plasma panel.
+- Verify group membership updates after launch, close, pin/unpin and grouping changes.
+- Test drops, drag reorder, activation and minimize geometry in each layout.
+- Compare performance with the single-row baseline.
+
+
 ## 2026-11-14 — 0.2.0 initial window grouping
 
 ### Implemented

@@ -7,6 +7,11 @@ Alveus Dock is a lightweight KDE Plasma 6 applet written in QML. The current tar
 - Keep the dock standalone. Do not patch or replace KDE's Icons-Only Task Manager.
 - Use KDE/Plasma APIs for task discovery, launchers and window actions.
 - Use the native TasksModel hierarchical grouping API for grouped windows; do not duplicate window discovery or maintain a second window registry.
+- For Dual/Adaptive layouts, keep KDE TasksModel as the only source of launcher/window data and split presentation with Qt DelegateModel groups.
+- Preserve the source TaskManager row index when using filtered DelegateModel views; never pass a filtered view index to TasksModel actions.
+- Keep launcher reordering in Quick Access only when layers are split; do not reorder the Running Windows layer.
+- Keep Single mode as the compatibility default; Adaptive hides only the empty running layer, not pinned launchers.
+- Derive horizontal two-row and vertical two-column geometry from the same icon extent and spacing settings.
 - For a grouped child, build its model index with makeModelIndex(parentRow, childRow). Never pass a child row as a top-level task index.
 - Close transient group choosers when their parent delegate is pooled, reused or no longer represents a group.
 - Keep group-parent delegate geometry published to TaskManager so KWin minimize effects continue targeting the dock icon.

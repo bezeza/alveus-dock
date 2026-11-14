@@ -7,7 +7,7 @@ Alveus Dock is a lightweight, standalone dock applet for KDE Plasma 6. It uses K
 
 It is an independent applet, not a patch or replacement for KDE's Icons-Only Task Manager. It can be used on its own or alongside other Plasma panel widgets.
 
-> **Project status:** 0.2.0 window-grouping development branch, based on the 0.1.3 stabilization work. Runtime testing in a live Plasma session is still required. CI checks do not replace testing in a running desktop session.
+> **Project status:** 0.3.0 dual-layer layout development branch, based on the 0.2.0 window-grouping work. Runtime testing in a live Plasma session is still required. CI checks do not replace testing in a running desktop session.
 
 ## Features
 
@@ -24,6 +24,11 @@ It is an independent applet, not a patch or replacement for KDE's Icons-Only Tas
 - Optional grouping of windows from the same application using KDE's native TaskManager model.
 - Compact window chooser for grouped applications, with individual activate and close actions.
 - Keyboard navigation in the chooser with Escape to close and Enter to activate the selected window.
+- Configurable Single, Dual and Adaptive dock layouts.
+- Dual layout separates pinned Quick Access launchers from Running Windows.
+- Horizontal panels use two rows; vertical panels use two columns.
+- Adaptive layout hides the running-window layer when no windows are open.
+- Running-window delegates preserve KDE's minimize-to-icon geometry for effects such as Magic Lamp.
 - Window-count badge on grouped application icons and an ungroup action in the context menu.
 
 ### Motion and visual feedback
@@ -45,6 +50,8 @@ KWin effects such as Magic Lamp remain KDE/KWin features and are not reimplement
 - Drag-to-reorder toggle.
 - Current-desktop and current-screen filters.
 - Optional application grouping, disabled by default.
+- Dock layout mode: Single, Dual or Adaptive.
+- Spacing between the two layers.
 
 ### Diagnostics
 - Structured INFO, WARN and ERROR messages in the Plasma/Qt journal.
@@ -149,7 +156,7 @@ A successful CI build confirms package structure and buildability. It does **not
 
 ## Repository map
 
-- **package/** - Plasma applet metadata, QML UI and settings.
+- **package/** - Plasma applet metadata, QML UI, shared task delegate and settings.
 - **packaging/** - Fedora RPM spec and COPR publication notes.
 - **scripts/** - local install, uninstall, checks, RPM build and log collection.
 - **docs/ROADMAP.md** - future work only.

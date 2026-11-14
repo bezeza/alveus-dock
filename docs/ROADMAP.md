@@ -34,7 +34,19 @@ Build a small, responsive KDE Plasma dock that feels more expressive than Icons-
 
 **Exit criteria:** grouping, choosing, activating and closing windows works without stale delegates, wrong-window activation or excessive CPU usage.
 
-## 0.3.0 — Alveus motion identity
+## 0.3.0 — dual-layer dock
+
+- [ ] Test Single, Dual and Adaptive modes in a live Plasma panel.
+- [ ] Verify pinned launchers remain independent from running windows.
+- [ ] Verify launcher reorder persists and cannot move windows into the launcher layer.
+- [ ] Verify grouping, Window Chooser and Magic Lamp work in the running layer.
+- [ ] Test horizontal two-row and vertical two-column layouts, including panel thickness constraints.
+- [ ] Compare CPU/RSS in Single, Dual and Adaptive modes.
+- [ ] Capture genuine screenshots of both orientations and all three modes.
+
+**Exit criteria:** both layers show the correct model items, switching layouts does not lose launcher order, and the panel does not clip the dock at supported sizes.
+
+## 0.4.0 — Alveus motion identity
 
 - [ ] Add a liquid-style active-window indicator.
 - [ ] Evaluate magnetic spacing between nearby icons.
@@ -45,7 +57,7 @@ Build a small, responsive KDE Plasma dock that feels more expressive than Icons-
 
 **Exit criteria:** all effects are finite, interruptible, respect reduced-motion settings and do not cause visible lag during normal desktop use.
 
-## 0.4.0 — polish and compatibility
+## 0.5.0 — polish and compatibility
 
 - [ ] Finish horizontal and vertical layout behavior.
 - [ ] Test Wayland and X11 separately where supported.

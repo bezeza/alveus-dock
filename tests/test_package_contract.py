@@ -119,7 +119,7 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("taskModel.requestPublishDelegateGeometry(", self.qml)
         self.assertIn("delegateRoot.model.IsWindow", self.qml)
         self.assertIn(
-            "delegateRoot.modelIndex(),\\n                    geometry,\\n                    delegateRoot",
+            "delegateRoot.modelIndex(),\n                    geometry,\n                    delegateRoot",
             self.qml,
         )
 

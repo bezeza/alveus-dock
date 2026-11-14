@@ -6,11 +6,9 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import QtQml.Models
 
-import org.kde.kirigami as Kirigami
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
 import org.kde.taskmanager as TaskManager
@@ -518,7 +516,7 @@ PlasmoidItem {
             const reorderViewIndex = reorderList.indexAt(reorderPoint.x, reorderPoint.y);
             const reorderDelegate = reorderViewIndex >= 0
                 ? reorderList.itemAtIndex(reorderViewIndex) : null;
-            const reorderTargetIndex = reorderDelegate ? reorderDelegate.sourceIndex : -1;
+            const reorderTargetIndex = reorderDelegate ? reorderDelegate["sourceIndex"] : -1;
 
             // Internal drag is restricted to the quick-access layer in split mode.
             if (drop.source && drop.source.dockIndex !== undefined) {
@@ -598,7 +596,7 @@ PlasmoidItem {
             const taskViewIndex = taskList.indexAt(taskPoint.x, taskPoint.y);
             const taskDelegate = taskViewIndex >= 0
                 ? taskList.itemAtIndex(taskViewIndex) : null;
-            const targetIndex = taskDelegate ? taskDelegate.sourceIndex : -1;
+            const targetIndex = taskDelegate ? taskDelegate["sourceIndex"] : -1;
 
             if (drop.urls && drop.urls.length > 0 && targetIndex >= 0) {
                 const targetModelIndex = taskModel.makeModelIndex(targetIndex);

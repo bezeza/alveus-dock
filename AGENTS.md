@@ -6,6 +6,10 @@ Alveus Dock is a lightweight KDE Plasma 6 applet written in QML. The current tar
 
 - Keep the dock standalone. Do not patch or replace KDE's Icons-Only Task Manager.
 - Use KDE/Plasma APIs for task discovery, launchers and window actions.
+- Use the native TasksModel hierarchical grouping API for grouped windows; do not duplicate window discovery or maintain a second window registry.
+- For a grouped child, build its model index with makeModelIndex(parentRow, childRow). Never pass a child row as a top-level task index.
+- Close transient group choosers when their parent delegate is pooled, reused or no longer represents a group.
+- Keep group-parent delegate geometry published to TaskManager so KWin minimize effects continue targeting the dock icon.
 - KWin effects such as Magic Lamp belong to KWin; do not try to recreate or control them from the applet.
 - Keep the project small. Do not add a Rust daemon, resident service, Windows port or broad cross-platform layer unless the maintainer explicitly changes the scope.
 - Avoid new runtime dependencies unless they solve a demonstrated problem.

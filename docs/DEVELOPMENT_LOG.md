@@ -19,7 +19,7 @@ This file records dated engineering work. It is not a runtime error log and is n
 ### Validation
 - KDE TaskManager API documentation confirms move() returns a boolean and syncLaunchers() must be called after move operations to persist launcher ordering.
 - Previous GitHub Actions run passed: structural checks, all 11 Python regression tests, Python/shell syntax checks, strict QML lint with zero warnings, RPM build and RPM metadata/file/dependency verification. See [the successful CI run](https://github.com/bezeza/alveus-dock/actions/runs/43597366134).
-- New geometry integration and its regression tests are awaiting CI validation.
+- Latest GitHub Actions run passed after the geometry integration: structural checks, all 13 Python regression tests, Python/shell syntax checks, strict QML lint, Fedora RPM build and RPM metadata/file/dependency verification. [Successful run](https://github.com/bezeza/alveus-dock/actions/runs/43608979486).
 - Live Plasma runtime and performance tests remain pending because no KDE desktop session is available here.
 
 ### Next

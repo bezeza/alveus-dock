@@ -26,6 +26,7 @@ assert "Version 3, 29 June 2007" in license_text
 
 required = [
     "AGENTS.md",
+    ".contextProperties.ini",
     "README.md",
     "CHANGELOG.md",
     "package/contents/ui/main.qml",

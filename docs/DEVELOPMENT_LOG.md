@@ -14,13 +14,15 @@ This file records dated engineering work. It is not a runtime error log and is n
 
 ### Validation
 - The source recovery step verified all 21 archive entries.
-- Repository-level structural checks and Fedora RPM/QML CI are being added.
+- Structural checks passed in GitHub Actions.
+- QML lint passed with Fedora 44 Qt and Plasma QML modules; the CI PATH was corrected to use Fedora's Qt tool directory.
+- The noarch RPM built successfully as alveus-dock-0.1.2-1.fc44 and its package metadata, file list and dependencies were verified.
+- GitHub Actions uploaded the RPM artifact for download.
 - No live Plasma session was available during this work.
 - No genuine application screenshots have been captured.
 - COPR has not been created or published.
 
 ### Next
-- Pass the new GitHub Actions build and QML lint.
 - Run the applet in Fedora 44 KDE Plasma 6.8.x.
 - Verify task interactions, settings persistence, installation and removal.
 - Capture real screenshots after runtime validation.

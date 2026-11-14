@@ -183,8 +183,8 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("chooser.activateRequested(childIndex)", self.group_chooser)
 
     def test_group_actions_are_logged(self):
-        self.assertIn('"activate-group-window"', self.task_delegate)
-        self.assertIn('"close-group-window"', self.task_delegate)
+        self.assertIn('"activate-group-window"', self.qml)
+        self.assertIn('"close-group-window"', self.qml)
         self.assertIn('"ungroup-windows"', self.task_delegate)
 
     def test_kde_minimize_effect_geometry_is_published(self):

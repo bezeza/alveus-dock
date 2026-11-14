@@ -29,13 +29,13 @@ Item {
         + (model.IsGroupParent ? qsTr(", %1 windows").arg(childCount) : "")
     Accessible.role: Accessible.Button
 
-    width: dockRoot.itemExtentForTask(model.IsLauncher)
-    height: dockRoot.itemExtentForTask(model.IsLauncher)
+    width: delegateRoot.dockRoot.itemExtentForTask(model.IsLauncher)
+    height: delegateRoot.dockRoot.itemExtentForTask(model.IsLauncher)
     z: hovered ? 2 : 0
 
     onDemandingAttentionChanged: {
         if (demandingAttention && Plasmoid.configuration.enableAttentionReaction) {
-            dockRoot.logInfo("attention-requested", { dockIndex: dockIndex });
+            delegateRoot.dockRoot.logInfo("attention-requested", { dockIndex: dockIndex });
             attentionReaction.restart();
         }
     }
@@ -53,8 +53,8 @@ Item {
         attentionRing.opacity = 0;
         attentionRing.scale = 0.8;
         contextMenu.close();
-        if (dockRoot.groupVisualParent === delegateRoot) {
-            dockRoot.closeGroupChooser();
+        if (delegateRoot.dockRoot.groupVisualParent === delegateRoot) {
+            delegateRoot.dockRoot.closeGroupChooser();
         }
     }
 
@@ -69,7 +69,7 @@ Item {
     }
 
     function modelIndex() {
-        return taskModel.makeModelIndex(sourceIndex);
+        return delegateRoot.taskModel.makeModelIndex(sourceIndex);
     }
 
     function publishIconGeometry() {
@@ -81,8 +81,8 @@ Item {
             return;
         }
 
-        const geometry = dockRoot.globalRect(delegateRoot);
-        taskModel.requestPublishDelegateGeometry(
+        const geometry = delegateRoot.dockRoot.globalRect(delegateRoot);
+        delegateRoot.taskModel.requestPublishDelegateGeometry(
             delegateRoot.modelIndex(),
             geometry,
             delegateRoot
@@ -94,7 +94,7 @@ Item {
     }
 
     Connections {
-        target: dockRoot
+        target: delegateRoot.dockRoot
 
         function onIconGeometryRefreshRequested() {
             delegateRoot.scheduleIconGeometryPublish();
@@ -112,9 +112,9 @@ Item {
         const idx = modelIndex();
 
         if (model.IsGroupParent) {
-            dockRoot.toggleGroupChooser(delegateRoot);
-            if (dockRoot.groupVisualParent === delegateRoot) {
-                dockRoot.logInfo("window-chooser-opened", { childCount: childCount });
+            delegateRoot.dockRoot.toggleGroupChooser(delegateRoot);
+            if (delegateRoot.dockRoot.groupVisualParent === delegateRoot) {
+                delegateRoot.dockRoot.logInfo("window-chooser-opened", { childCount: childCount });
             }
             return;
         }
@@ -122,28 +122,28 @@ Item {
         if (model.IsWindow && model.IsActive) {
             // Refresh the target immediately before asking KWin to minimize.
             publishIconGeometry();
-            dockRoot.runAction("toggle-minimized", () => taskModel.requestToggleMinimized(idx));
+            delegateRoot.dockRoot.runAction("toggle-minimized", () => delegateRoot.taskModel.requestToggleMinimized(idx));
         } else {
-            dockRoot.runAction("activate-window", () => taskModel.requestActivate(idx));
+            delegateRoot.dockRoot.runAction("activate-window", () => delegateRoot.taskModel.requestActivate(idx));
         }
     }
 
     onChildCountChanged: {
-        if (childCount < 2 && dockRoot.groupVisualParent === delegateRoot) {
-            dockRoot.closeGroupChooser();
+        if (childCount < 2 && delegateRoot.dockRoot.groupVisualParent === delegateRoot) {
+            delegateRoot.dockRoot.closeGroupChooser();
         }
     }
 
     onModelChanged: {
         scheduleIconGeometryPublish();
-        if (dockRoot.groupVisualParent === delegateRoot) {
-            dockRoot.closeGroupChooser();
+        if (delegateRoot.dockRoot.groupVisualParent === delegateRoot) {
+            delegateRoot.dockRoot.closeGroupChooser();
         }
     }
 
     onSourceIndexChanged: {
-        if (dockRoot.groupVisualParent === delegateRoot) {
-            dockRoot.groupParentIndex = sourceIndex;
+        if (delegateRoot.dockRoot.groupVisualParent === delegateRoot) {
+            delegateRoot.dockRoot.groupParentIndex = sourceIndex;
         }
     }
 
@@ -165,13 +165,13 @@ Item {
         id: appIcon
 
         anchors.centerIn: parent
-        width: dockRoot.iconSizeForTask(delegateRoot.model.IsLauncher)
-        height: dockRoot.iconSizeForTask(delegateRoot.model.IsLauncher)
+        width: delegateRoot.dockRoot.iconSizeForTask(delegateRoot.model.IsLauncher)
+        height: delegateRoot.dockRoot.iconSizeForTask(delegateRoot.model.IsLauncher)
         source: delegateRoot.model.decoration
         active: delegateRoot.hovered
         enabled: true
         scale: delegateRoot.launchScale
-               * (delegateRoot.hovered ? dockRoot.hoverScale : 1.0)
+               * (delegateRoot.hovered ? delegateRoot.dockRoot.hoverScale : 1.0)
 
         Behavior on scale {
             NumberAnimation {
@@ -209,7 +209,7 @@ Item {
         id: energyPulse
 
         anchors.centerIn: appIcon
-        width: dockRoot.iconSizeForTask(delegateRoot.model.IsLauncher) * 0.68
+        width: delegateRoot.dockRoot.iconSizeForTask(delegateRoot.model.IsLauncher) * 0.68
         height: width
         radius: width / 2
         color: "transparent"
@@ -225,7 +225,7 @@ Item {
         id: attentionRing
 
         anchors.centerIn: appIcon
-        width: dockRoot.iconSizeForTask(delegateRoot.model.IsLauncher) * 0.9
+        width: delegateRoot.dockRoot.iconSizeForTask(delegateRoot.model.IsLauncher) * 0.9
         height: width
         radius: width / 2
         color: "transparent"
@@ -312,7 +312,7 @@ Item {
 
     Controls.BusyIndicator {
         anchors.centerIn: appIcon
-        width: dockRoot.iconSizeForTask(delegateRoot.model.IsLauncher) * 0.58
+        width: delegateRoot.dockRoot.iconSizeForTask(delegateRoot.model.IsLauncher) * 0.58
         height: width
         running: !!delegateRoot.model.IsStartup
         visible: running
@@ -322,10 +322,10 @@ Item {
     Rectangle {
         id: activeIndicator
 
-        width: dockRoot.vertical ? 3 : 18
-        height: dockRoot.vertical ? 18 : 3
-        x: dockRoot.vertical ? parent.width - width - 1 : (parent.width - width) / 2
-        y: dockRoot.vertical ? (parent.height - height) / 2 : parent.height - height - 1
+        width: delegateRoot.dockRoot.vertical ? 3 : 18
+        height: delegateRoot.dockRoot.vertical ? 18 : 3
+        x: delegateRoot.dockRoot.vertical ? parent.width - width - 1 : (parent.width - width) / 2
+        y: delegateRoot.dockRoot.vertical ? (parent.height - height) / 2 : parent.height - height - 1
         radius: 2
         color: Kirigami.Theme.highlightColor
         opacity: Plasmoid.configuration.showActiveIndicator
@@ -370,8 +370,8 @@ Item {
                 delegateRoot.playLaunchReaction();
                 delegateRoot.activateTask();
             } else if (mouse.button === Qt.MiddleButton) {
-                dockRoot.runAction("new-instance",
-                               () => taskModel.requestNewInstance(delegateRoot.modelIndex()));
+                delegateRoot.dockRoot.runAction("new-instance",
+                               () => delegateRoot.taskModel.requestNewInstance(delegateRoot.modelIndex()));
             } else if (mouse.button === Qt.RightButton) {
                 contextMenu.popup();
             }
@@ -398,11 +398,11 @@ Item {
             onTriggered: {
                 const launcherUrl = delegateRoot.model.LauncherUrlWithoutIcon;
                 if (delegateRoot.model.HasLauncher) {
-                    dockRoot.runAction("unpin-launcher",
-                                   () => taskModel.requestRemoveLauncher(launcherUrl));
+                    delegateRoot.dockRoot.runAction("unpin-launcher",
+                                   () => delegateRoot.taskModel.requestRemoveLauncher(launcherUrl));
                 } else {
-                    dockRoot.runAction("pin-launcher",
-                                   () => taskModel.requestAddLauncher(launcherUrl));
+                    delegateRoot.dockRoot.runAction("pin-launcher",
+                                   () => delegateRoot.taskModel.requestAddLauncher(launcherUrl));
                 }
             }
         }
@@ -410,18 +410,18 @@ Item {
         Controls.MenuItem {
             text: qsTr("New instance")
             enabled: delegateRoot.model.CanLaunchNewInstance
-            onTriggered: dockRoot.runAction(
+            onTriggered: delegateRoot.dockRoot.runAction(
                 "new-instance",
-                () => taskModel.requestNewInstance(delegateRoot.modelIndex())
+                () => delegateRoot.taskModel.requestNewInstance(delegateRoot.modelIndex())
             )
         }
 
         Controls.MenuItem {
             text: qsTr("Ungroup windows")
             visible: !!delegateRoot.model.IsGroupParent
-            onTriggered: dockRoot.runAction(
+            onTriggered: delegateRoot.dockRoot.runAction(
                 "ungroup-windows",
-                () => taskModel.requestToggleGrouping(delegateRoot.modelIndex())
+                () => delegateRoot.taskModel.requestToggleGrouping(delegateRoot.modelIndex())
             )
         }
 
@@ -430,9 +430,9 @@ Item {
         Controls.MenuItem {
             text: qsTr("Close")
             visible: delegateRoot.model.IsWindow
-            onTriggered: dockRoot.runAction(
+            onTriggered: delegateRoot.dockRoot.runAction(
                 "close-window",
-                () => taskModel.requestClose(delegateRoot.modelIndex())
+                () => delegateRoot.taskModel.requestClose(delegateRoot.modelIndex())
             )
         }
     }

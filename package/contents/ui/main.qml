@@ -333,6 +333,8 @@ PlasmoidItem {
                 const idx = modelIndex();
 
                 if (model.IsWindow && model.IsActive) {
+                    // Refresh the target immediately before asking KWin to minimize.
+                    publishIconGeometry();
                     root.runAction("toggle-minimized", () => taskModel.requestToggleMinimized(idx));
                 } else {
                     root.runAction("activate-window", () => taskModel.requestActivate(idx));

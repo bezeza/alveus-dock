@@ -1,15 +1,18 @@
 # Alveus Dock — Development Log
 
-This file records dated engineering work. It is not a runtime error log and is not the future roadmap.
+This file records dated engineering work. It is not a runtime error log and it is not the future roadmap.
 
 ## 2026-11-14 — 0.3.0 runtime-readiness audit
 
 ### Fixed
 - Consolidated duplicate `onModelChanged` handlers in the shared task delegate so model replacement both refreshes KWin icon geometry and closes a stale group chooser from one handler.
+- Corrected the model-change regression test's raw-string regex and block terminator matching. The initial failure was in the test matcher, not in QML compilation.
 
 ### Validation
 - Added a regression test that rejects duplicate model-change handlers and verifies both responsibilities remain present.
-- Live Plasma behavior remains unverified until the applet can be run in a real desktop session.
+- The current branch contains 26 Python regression tests; all passed in GitHub Actions, along with structural checks, Python/shell syntax checks, strict QML lint, Fedora 44 RPM build, RPM metadata/file/dependency verification and artifact upload.
+- Successful CI run for PR head `8234c1b59a3a74ffdca46fe1fcc2db896588a5e3`: https://github.com/bezeza/alveus-dock/actions/runs/43628298835.
+- Live Plasma behavior remains unverified until the applet can be run in a real desktop session. No Issue #5 runtime item is considered complete from CI alone.
 
 ## 2026-11-14 — 0.3.0 dual-layer layout implementation
 
@@ -24,17 +27,20 @@ This file records dated engineering work. It is not a runtime error log and is n
 - Added horizontal two-row and vertical two-column geometry; Adaptive hides the empty running layer.
 
 ### Validation
-- GitHub Actions passed structural checks, all 25 Python regression tests, Python/shell syntax checks, strict QML lint, Fedora 44 RPM build, RPM metadata/file/dependency verification and artifact upload.
-- Successful CI run: https://github.com/bezeza/alveus-dock/actions/runs/43617197076.
+- GitHub Actions passed structural checks, all 26 Python regression tests, Python/shell syntax checks, strict QML lint, Fedora 44 RPM build, RPM metadata/file/dependency verification and artifact upload.
+- Latest successful CI run: https://github.com/bezeza/alveus-dock/actions/runs/43628298835.
 - Default Dual thickness is 96 logical pixels with 32 px icons in each layer, 4 px layer spacing and 6 px outer padding.
 - A live Plasma session is still required to verify panel thickness, both orientations, launcher persistence, grouped windows and Magic Lamp geometry.
 
 ### Next
 - Run all three modes in a live Plasma panel.
-- Verify group membership updates after launch, close, pin/unpin and grouping changes.
+- Verify pinned launchers remain visible while running windows appear separately and disappear on close.
+- Verify group membership survives launch, close, pin/unpin, grouping changes and layout-mode switches.
+- Verify Magic Lamp targets the running-window icon in the second layer.
+- Test horizontal and vertical layouts, panel thickness, resize, screen-edge relocation and fractional scaling.
 - Test drops, drag reorder, activation and minimize geometry in each layout.
-- Compare performance with the single-row baseline.
-
+- Compare CPU/RSS with the single-row baseline; verify no polling or continuous animation.
+- Capture genuine screenshots of both orientations and all three modes.
 
 ## 2026-11-14 — 0.2.0 initial window grouping
 
@@ -57,7 +63,6 @@ This file records dated engineering work. It is not a runtime error log and is n
 - Test chooser placement on all four panel edges and vertical panels.
 - Test activation, close, ungroup and minimize-to-icon behavior.
 - Evaluate native KDE window previews after the chooser is stable.
-
 
 ## 2026-11-14 — 0.1.3 stabilization branch
 

@@ -2,6 +2,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  */
 import QtQuick
+import QtQuick.Layouts
 import QtQuick.Controls as QQC2
 import org.kde.kcmutils as KCMUtils
 import org.kde.kirigami as Kirigami

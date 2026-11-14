@@ -95,7 +95,7 @@ Item {
     }
 
     Connections {
-        target: root
+        target: dockRoot
 
         function onIconGeometryRefreshRequested() {
             delegateRoot.scheduleIconGeometryPublish();

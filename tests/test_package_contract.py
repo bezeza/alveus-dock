@@ -11,10 +11,13 @@ import xml.etree.ElementTree as ET
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 QML_PATH = ROOT / "package/contents/ui/main.qml"
 GROUP_CHOOSER_PATH = ROOT / "package/contents/ui/GroupWindowChooser.qml"
+TASK_DELEGATE_PATH = ROOT / "package/contents/ui/TaskDelegate.qml"
+LAYOUT_CONFIG_PATH = ROOT / "package/contents/config/ConfigLayout.qml"
 CONFIG_XML_PATH = ROOT / "package/contents/config/main.xml"
 APP_CONFIG_PATHS = [
     ROOT / "package/contents/config/ConfigAppearance.qml",
     ROOT / "package/contents/config/ConfigBehavior.qml",
+    LAYOUT_CONFIG_PATH,
 ]
 KCFG_NS = "{http://www.kde.org/standards/kcfg/1.0}"
 
@@ -24,6 +27,8 @@ class PackageContractTests(unittest.TestCase):
     def setUpClass(cls):
         cls.qml = QML_PATH.read_text(encoding="utf-8")
         cls.group_chooser = GROUP_CHOOSER_PATH.read_text(encoding="utf-8")
+        cls.task_delegate = TASK_DELEGATE_PATH.read_text(encoding="utf-8")
+        cls.all_qml = cls.qml + "\n" + cls.task_delegate
         cls.metadata = json.loads((ROOT / "package/metadata.json").read_text(encoding="utf-8"))
         cls.spec = (ROOT / "packaging/alveus-dock.spec").read_text(encoding="utf-8")
         cls.kcfg = ET.parse(CONFIG_XML_PATH).getroot()
@@ -56,7 +61,12 @@ class PackageContractTests(unittest.TestCase):
         self.assertEqual(aliases, entries)
 
     def test_numeric_controls_match_kconfig_limits(self):
-        controls = {"iconSize": "iconSize", "iconSpacing": "iconSpacing", "hoverScale": "hoverScale"}
+        controls = {
+            "iconSize": "iconSize",
+            "iconSpacing": "iconSpacing",
+            "hoverScale": "hoverScale",
+            "layerSpacing": "layerSpacing",
+        }
         for setting, control_id in controls.items():
             entry = self.kcfg.find(f".//{KCFG_NS}entry[@name='{setting}']")
             self.assertIsNotNone(entry, f"Missing KConfig entry: {setting}")
@@ -72,7 +82,7 @@ class PackageContractTests(unittest.TestCase):
             self.assertRegex(block, rf"to:\s*{maximum}\b")
 
     def test_manual_reordering_syncs_persisted_launchers(self):
-        move_pos = self.qml.find("taskModel.move(sourceIndex, targetIndex)")
+        move_pos = self.qml.find("taskModel.move(sourceIndex, reorderTargetIndex)")
         sync_pos = self.qml.find("taskModel.syncLaunchers()", move_pos)
         self.assertGreaterEqual(move_pos, 0)
         self.assertGreater(sync_pos, move_pos)
@@ -80,21 +90,22 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("drop.acceptProposedAction()", self.qml[sync_pos:])
 
     def test_recycled_delegates_reset_transient_state(self):
-        pooled = self.qml.find("ListView.onPooled")
-        reused = self.qml.find("ListView.onReused")
+        pooled = self.task_delegate.find("ListView.onPooled")
+        reused = self.task_delegate.find("ListView.onReused")
         self.assertGreaterEqual(pooled, 0)
         self.assertGreater(reused, pooled)
-        pooled_block = self.qml[pooled:reused]
+        pooled_block = self.task_delegate[pooled:reused]
         for token in ["hovered = false", "launchScale = 1.0", "launchBounce.stop()",
                       "launchPulse.stop()", "attentionReaction.stop()", "energyPulse.opacity = 0",
                       "attentionRing.opacity = 0", "contextMenu.close()"]:
             self.assertIn(token, pooled_block)
-        self.assertIn("launchScale = 1.0", self.qml[reused:])
+        self.assertIn("launchScale = 1.0", self.task_delegate[reused:])
 
     def test_qmllint_fails_on_unqualified_access(self):
         lint_config = (ROOT / ".qmllint.ini").read_text(encoding="utf-8")
         self.assertIn("UnqualifiedAccess=error", lint_config)
         self.assertIn("pragma ComponentBehavior: Bound", self.qml)
+        self.assertIn("pragma ComponentBehavior: Bound", self.task_delegate)
 
     def test_diagnostics_do_not_copy_exception_messages(self):
         logger_start = self.qml.find("function logError")
@@ -107,8 +118,8 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn('logInfo("action-dispatched"', self.qml)
 
     def test_animations_are_finite(self):
-        self.assertNotIn("loops: Animation.Infinite", self.qml)
-        self.assertRegex(self.qml, r"loops:\s*2\b")
+        self.assertNotIn("loops: Animation.Infinite", self.all_qml)
+        self.assertRegex(self.all_qml, r"loops:\s*2\b")
 
     def test_reorder_rejects_out_of_range_indices(self):
         self.assertIn("Number.isInteger(sourceIndex)", self.qml)
@@ -153,13 +164,13 @@ class PackageContractTests(unittest.TestCase):
     def test_grouped_windows_keep_kde_minimize_geometry(self):
         self.assertIn(
             "!delegateRoot.model.IsWindow && !delegateRoot.model.IsGroupParent",
-            self.qml,
+            self.task_delegate,
         )
 
     def test_group_chooser_closes_when_delegate_is_recycled(self):
-        pooled = self.qml.find("ListView.onPooled")
-        reused = self.qml.find("ListView.onReused")
-        self.assertIn("root.closeGroupChooser()", self.qml[pooled:reused])
+        pooled = self.task_delegate.find("ListView.onPooled")
+        reused = self.task_delegate.find("ListView.onReused")
+        self.assertIn("dockRoot.closeGroupChooser()", self.task_delegate[pooled:reused])
 
     def test_group_chooser_supports_keyboard_navigation(self):
         self.assertIn("Keys.onEscapePressed", self.group_chooser)
@@ -168,18 +179,18 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("chooser.activateRequested(childIndex)", self.group_chooser)
 
     def test_group_actions_are_logged(self):
-        self.assertIn('"activate-group-window"', self.qml)
-        self.assertIn('"close-group-window"', self.qml)
-        self.assertIn('"ungroup-windows"', self.qml)
+        self.assertIn('"activate-group-window"', self.task_delegate)
+        self.assertIn('"close-group-window"', self.task_delegate)
+        self.assertIn('"ungroup-windows"', self.task_delegate)
 
     def test_kde_minimize_effect_geometry_is_published(self):
         self.assertIn("function globalRect(item)", self.qml)
         self.assertIn("item.mapToGlobal(0, 0)", self.qml)
-        self.assertIn("taskModel.requestPublishDelegateGeometry(", self.qml)
-        self.assertIn("delegateRoot.model.IsWindow", self.qml)
-        self.assertIn("publishIconGeometry();", self.qml)
-        minimize_pos = self.qml.find('root.runAction("toggle-minimized"')
-        publish_pos = self.qml.rfind("publishIconGeometry();", 0, minimize_pos)
+        self.assertIn("taskModel.requestPublishDelegateGeometry(", self.task_delegate)
+        self.assertIn("delegateRoot.model.IsWindow", self.task_delegate)
+        self.assertIn("publishIconGeometry();", self.task_delegate)
+        minimize_pos = self.task_delegate.find('dockRoot.runAction("toggle-minimized"')
+        publish_pos = self.task_delegate.rfind("publishIconGeometry();", 0, minimize_pos)
         self.assertGreaterEqual(publish_pos, 0)
         self.assertIn(
             "delegateRoot.modelIndex(),\n                    geometry,\n                    delegateRoot",
@@ -199,7 +210,62 @@ class PackageContractTests(unittest.TestCase):
             "function onIconGeometryRefreshRequested()",
             "delegateRoot.scheduleIconGeometryPublish()",
         ]:
-            self.assertIn(token, self.qml)
+            self.assertIn(token, self.qml + "\n" + self.task_delegate)
+
+
+    def test_layout_settings_have_safe_defaults_and_controls(self):
+        mode = self.kcfg.find(f".//{KCFG_NS}entry[@name='dockLayoutMode']")
+        spacing = self.kcfg.find(f".//{KCFG_NS}entry[@name='layerSpacing']")
+        self.assertIsNotNone(mode)
+        self.assertIsNotNone(spacing)
+        self.assertEqual(mode.attrib["type"], "Int")
+        self.assertEqual(mode.find(f"{KCFG_NS}default").text, "0")
+        self.assertEqual(mode.find(f"{KCFG_NS}min").text, "0")
+        self.assertEqual(mode.find(f"{KCFG_NS}max").text, "2")
+        self.assertEqual(spacing.find(f"{KCFG_NS}default").text, "4")
+        self.assertIn("cfg_dockLayoutMode", self.config_qml)
+        self.assertIn("cfg_layerSpacing", self.config_qml)
+        for label in ["Single row", "Dual layer", "Adaptive"]:
+            self.assertIn(label, self.config_qml)
+
+    def test_dual_layout_uses_one_native_model_with_two_filtered_views(self):
+        self.assertIn("separateLaunchers: root.splitLayoutEnabled", self.qml)
+        self.assertIn("launchInPlace: !root.splitLayoutEnabled", self.qml)
+        self.assertIn('filterOnGroup: "quickAccess"', self.qml)
+        self.assertIn('filterOnGroup: "runningTasks"', self.qml)
+        self.assertIn('name: "quickAccess"', self.qml)
+        self.assertIn('name: "runningTasks"', self.qml)
+        self.assertIn("visualModel.items.addGroups", self.qml)
+        self.assertIn("visualModel.items.removeGroups", self.qml)
+        self.assertIn("TaskManager.AbstractTasksModel.IsLauncher", self.qml)
+        self.assertIn("TaskManager.AbstractTasksModel.IsWindow", self.qml)
+        self.assertIn("TaskManager.AbstractTasksModel.IsGroupParent", self.qml)
+        self.assertIn("TaskManager.AbstractTasksModel.IsStartup", self.qml)
+
+    def test_single_dual_and_adaptive_layouts_are_distinct(self):
+        self.assertIn("dockLayoutMode === 1", self.qml)
+        self.assertIn("dockLayoutMode === 2", self.qml)
+        self.assertIn("id: singleDockList", self.qml)
+        self.assertIn("id: quickAccessList", self.qml)
+        self.assertIn("id: runningTasksList", self.qml)
+        self.assertIn("root.vertical ? root.itemExtent", self.qml)
+        self.assertIn("root.itemExtent + root.layerSpacing", self.qml)
+        self.assertIn("Layout.preferredHeight: vertical ? panelLength : panelThickness", self.qml)
+
+    def test_running_layer_is_not_manually_reordered(self):
+        self.assertIn("allowReorder: false", self.qml)
+        self.assertIn(
+            "enabled: Plasmoid.configuration.enableDragReorder && delegateRoot.allowReorder",
+            self.task_delegate,
+        )
+        self.assertIn("sourceIsLauncher || !targetIsLauncher", self.qml)
+
+    def test_filtered_views_keep_source_model_indices(self):
+        self.assertIn("sourceIndex: DelegateModel.itemsIndex", self.qml)
+        self.assertIn("return taskModel.makeModelIndex(sourceIndex)", self.task_delegate)
+        self.assertIn("delegateRoot.modelIndex(),", self.task_delegate)
+        self.assertIn("taskDelegate ? taskDelegate.sourceIndex : -1", self.qml)
+        self.assertIn("reorderDelegate ? reorderDelegate.sourceIndex : -1", self.qml)
 
     def test_project_has_performance_diagnostic(self):
         self.assertTrue((ROOT / "docs/PERFORMANCE.md").is_file())

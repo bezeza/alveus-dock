@@ -15,7 +15,7 @@ This file records dated engineering work. It is not a runtime error log and is n
 - Added regression coverage for grouping configuration, child model indices, chooser actions, count badges and grouped minimize geometry.
 
 ### Validation
-- Structural checks and Fedora CI are pending for this branch.
+- GitHub Actions passed on the latest branch head: structural checks, all 20 Python regression tests, Python/shell syntax checks, strict QML lint, Fedora 44 RPM build and RPM metadata/file/dependency verification. [Successful run](https://github.com/bezeza/alveus-dock/actions/runs/43612176399).
 - Live Plasma runtime testing is required for popup placement, keyboard navigation, grouped activation/close, ungrouping and minimize effects on Wayland and X11.
 
 ### Next

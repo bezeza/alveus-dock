@@ -118,7 +118,7 @@ for token in ["qmllint", "scripts/check-package.py", "scripts/build-rpm.sh", "ac
 
 assert "dropTarget" not in qml, "Stale dropTarget reference remains"
 assert qml.count("DropArea {") == 1
-qml_version = re.search(r'version:\\s*"([^"]+)"', qml)
+qml_version = re.search(r'version:\s*"([^"]+)"', qml)
 assert qml_version and qml_version.group(1) == version, "Runtime log and package versions differ"
 assert "UnqualifiedAccess=error" in (ROOT / ".qmllint.ini").read_text(encoding="utf-8")
 assert "docs/SCREENSHOTS.md" in (ROOT / "README.md").read_text(encoding="utf-8")

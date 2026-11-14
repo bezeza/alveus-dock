@@ -118,10 +118,9 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("item.mapToGlobal(0, 0)", self.qml)
         self.assertIn("taskModel.requestPublishDelegateGeometry(", self.qml)
         self.assertIn("delegateRoot.model.IsWindow", self.qml)
-        self.assertRegex(
+        self.assertIn(
+            "delegateRoot.modelIndex(),\\n                    geometry,\\n                    delegateRoot",
             self.qml,
-            r"requestPublishDelegateGeometry\\(\\s*delegateRoot\\.modelIndex\\(\\),"
-            r"\\s*geometry,\\s*delegateRoot\\s*\\)",
         )
 
     def test_window_geometry_is_refreshed_after_layout_changes(self):

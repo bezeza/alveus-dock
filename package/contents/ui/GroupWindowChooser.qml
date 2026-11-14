@@ -61,6 +61,77 @@ PlasmaCore.PopupPlasmaWindow {
         border.width: 1
         border.color: Kirigami.Theme.disabledTextColor
 
+        DelegateModel {
+            id: windowModel
+
+            model: chooser.taskModel
+            rootIndex: chooser.taskModel.makeModelIndex(chooser.parentIndex)
+
+            delegate: Controls.ItemDelegate {
+                id: childDelegate
+
+                required property int index
+                required property var model
+
+                width: windowList.width
+                height: 46
+                Accessible.name: String(model.display)
+                    + (model.IsMinimized ? qsTr(", minimized") : "")
+                Accessible.role: Accessible.Button
+
+                contentItem: RowLayout {
+                    spacing: 8
+
+                    Kirigami.Icon {
+                        source: childDelegate.model.decoration
+                        Layout.preferredWidth: 28
+                        Layout.preferredHeight: 28
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 0
+
+                        Controls.Label {
+                            Layout.fillWidth: true
+                            text: childDelegate.model.display
+                            elide: Text.ElideRight
+                        }
+
+                        Controls.Label {
+                            Layout.fillWidth: true
+                            text: childDelegate.model.IsActive
+                                ? qsTr("Active")
+                                : childDelegate.model.IsMinimized
+                                    ? qsTr("Minimized") : qsTr("Open")
+                            color: Kirigami.Theme.disabledTextColor
+                            font.pixelSize: 10
+                        }
+                    }
+
+                    Controls.ToolButton {
+                        icon.name: "window-close"
+                        display: Controls.AbstractButton.IconOnly
+                        Accessible.name: qsTr("Close window")
+                        onClicked: {
+                            const childIndex = chooser.modelIndexForChild(childDelegate.index);
+                            if (childIndex) {
+                                chooser.closeRequested(childIndex);
+                            }
+                        }
+                    }
+                }
+
+                onClicked: {
+                    const childIndex = chooser.modelIndexForChild(childDelegate.index);
+                    if (childIndex) {
+                        chooser.activateRequested(childIndex);
+                    }
+                    chooser.visible = false;
+                }
+            }
+        }
+
         ColumnLayout {
             id: chooserColumn
 
@@ -86,74 +157,7 @@ PlasmaCore.PopupPlasmaWindow {
                 clip: true
                 reuseItems: false
                 boundsBehavior: Flickable.StopAtBounds
-                model: DelegateModel {
-                    model: chooser.taskModel
-                    rootIndex: chooser.taskModel.makeModelIndex(chooser.parentIndex)
-
-                    delegate: Controls.ItemDelegate {
-                        id: childDelegate
-
-                        required property int index
-                        required property var model
-
-                        width: windowList.width
-                        height: 46
-                        Accessible.name: String(model.display)
-                            + (model.IsMinimized ? qsTr(", minimized") : "")
-                        Accessible.role: Accessible.Button
-
-                        contentItem: RowLayout {
-                            spacing: 8
-
-                            Kirigami.Icon {
-                                source: childDelegate.model.decoration
-                                Layout.preferredWidth: 28
-                                Layout.preferredHeight: 28
-                            }
-
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                spacing: 0
-
-                                Controls.Label {
-                                    Layout.fillWidth: true
-                                    text: childDelegate.model.display
-                                    elide: Text.ElideRight
-                                }
-
-                                Controls.Label {
-                                    Layout.fillWidth: true
-                                    text: childDelegate.model.IsActive
-                                        ? qsTr("Active")
-                                        : childDelegate.model.IsMinimized
-                                            ? qsTr("Minimized") : qsTr("Open")
-                                    color: Kirigami.Theme.disabledTextColor
-                                    font.pixelSize: 10
-                                }
-                            }
-
-                            Controls.ToolButton {
-                                icon.name: "window-close"
-                                display: Controls.AbstractButton.IconOnly
-                                Accessible.name: qsTr("Close window")
-                                onClicked: {
-                                    const childIndex = chooser.modelIndexForChild(childDelegate.index);
-                                    if (childIndex) {
-                                        chooser.closeRequested(childIndex);
-                                    }
-                                }
-                            }
-                        }
-
-                        onClicked: {
-                            const childIndex = chooser.modelIndexForChild(childDelegate.index);
-                            if (childIndex) {
-                                chooser.activateRequested(childIndex);
-                            }
-                            chooser.visible = false;
-                        }
-                    }
-                }
+                model: chooser.visible ? windowModel : null
             }
         }
     }

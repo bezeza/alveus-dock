@@ -226,6 +226,11 @@ PlasmoidItem {
                 launchBounce.stop();
                 launchPulse.stop();
                 attentionReaction.stop();
+                energyPulse.opacity = 0;
+                energyPulse.scale = 0.45;
+                attentionRing.opacity = 0;
+                attentionRing.scale = 0.8;
+                contextMenu.close();
             }
 
             ListView.onReused: {

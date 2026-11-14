@@ -23,6 +23,7 @@ It is an independent applet, not a patch or replacement for KDE's Icons-Only Tas
 - Publishes running-window and grouped-task icon geometry to KDE TaskManager so KWin can target the Alveus icon for minimize effects such as Magic Lamp.
 - Optional grouping of windows from the same application using KDE's native TaskManager model.
 - Compact window chooser for grouped applications, with individual activate and close actions.
+- Keyboard navigation in the chooser with Escape to close and Enter to activate the selected window.
 - Window-count badge on grouped application icons and an ungroup action in the context menu.
 
 ### Motion and visual feedback

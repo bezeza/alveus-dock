@@ -9,13 +9,14 @@ This file records dated engineering work. It is not a runtime error log and is n
 - Added a compact Plasma-native PopupPlasmaWindow chooser backed by the hierarchical TasksModel child model.
 - Added per-window activation and close actions using makeModelIndex(parentRow, childRow).
 - Added a window-count badge and an ungroup action for grouped applications.
+- Added keyboard focus and Escape/Enter handling to the grouped window chooser.
 - Kept KWin minimize geometry publication working for group-parent delegates.
 - Close the chooser when its parent delegate is pooled, reused or no longer represents a group.
 - Added regression coverage for grouping configuration, child model indices, chooser actions, count badges and grouped minimize geometry.
 
 ### Validation
 - Structural checks and Fedora CI are pending for this branch.
-- Live Plasma runtime testing is required for popup placement, keyboard focus, grouped activation/close, ungrouping and minimize effects on Wayland and X11.
+- Live Plasma runtime testing is required for popup placement, keyboard navigation, grouped activation/close, ungrouping and minimize effects on Wayland and X11.
 
 ### Next
 - Verify grouping with two or more windows from the same application.

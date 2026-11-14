@@ -29,7 +29,7 @@ Build a small, responsive KDE Plasma dock that feels more expressive than Icons-
 - [ ] Runtime-test grouped window activation, close and ungroup actions on X11 and Wayland.
 - [ ] Test chooser placement on all four panel edges and vertical panels.
 - [ ] Evaluate KDE-supported window previews on hover.
-- [ ] Improve keyboard navigation and focus handling.
+- [ ] Complete keyboard navigation and focus handling across the full dock.
 - [ ] Verify task switching across virtual desktops and monitors.
 
 **Exit criteria:** grouping, choosing, activating and closing windows works without stale delegates, wrong-window activation or excessive CPU usage.

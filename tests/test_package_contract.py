@@ -161,6 +161,12 @@ class PackageContractTests(unittest.TestCase):
         reused = self.qml.find("ListView.onReused")
         self.assertIn("root.closeGroupChooser()", self.qml[pooled:reused])
 
+    def test_group_chooser_supports_keyboard_navigation(self):
+        self.assertIn("Keys.onEscapePressed", self.group_chooser)
+        self.assertIn("Keys.onReturnPressed", self.group_chooser)
+        self.assertIn("focus: true", self.group_chooser)
+        self.assertIn("chooser.activateRequested(childIndex)", self.group_chooser)
+
     def test_group_actions_are_logged(self):
         self.assertIn('"activate-group-window"', self.qml)
         self.assertIn('"close-group-window"', self.qml)

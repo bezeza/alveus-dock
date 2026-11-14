@@ -1,0 +1,14 @@
+{
+  "KPackageStructure": "Plasma/Applet",
+  "KPlugin": {
+    "Id": "org.bezeza.alveusdock",
+    "Name": "Alveus Dock",
+    "Description": "A compact, animated application dock for KDE Plasma 6",
+    "Version": "0.1.2",
+    "Category": "Windows and Tasks",
+    "Icon": "preferences-system-windows",
+    "License": "GPL-2.0-or-later",
+    "EnabledByDefault": true
+  },
+  "X-Plasma-API-Minimum-Version": "6.0"
+}

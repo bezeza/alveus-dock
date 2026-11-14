@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+      http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+  <kcfgfile name=""/>
+  <group name="General">
+    <entry name="iconSize" type="Int"><default>40</default><min>24</min><max>72</max></entry>
+    <entry name="iconSpacing" type="Int"><default>6</default><min>0</min><max>18</max></entry>
+    <entry name="hoverScale" type="Int"><default>112</default><min>100</min><max>130</max></entry>
+    <entry name="showBackground" type="Bool"><default>true</default></entry>
+    <entry name="showActiveIndicator" type="Bool"><default>true</default></entry>
+    <entry name="enableLaunchBounce" type="Bool"><default>true</default></entry>
+    <entry name="showLaunchPulse" type="Bool"><default>true</default></entry>
+    <entry name="enableAttentionReaction" type="Bool"><default>true</default></entry>
+    <entry name="enableDragReorder" type="Bool"><default>true</default></entry>
+    <entry name="currentDesktopOnly" type="Bool"><default>true</default></entry>
+    <entry name="currentScreenOnly" type="Bool"><default>false</default></entry>
+    <entry name="launchers" type="StringList">
+      <default>preferred://filemanager,preferred://browser,applications:org.kde.konsole.desktop</default>
+    </entry>
+  </group>
+</kcfg>

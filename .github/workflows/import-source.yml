@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "migration/alveus-dock-0.1.2-source.zip"
+      - ".github/workflows/import-source.yml"
 
 permissions:
   contents: write

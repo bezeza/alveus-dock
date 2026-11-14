@@ -23,6 +23,21 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/alveus-dock-import
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct, zipfile
+          p = Path("migration/alveus-dock-0.1.2-source.zip")
+          b = p.read_bytes()
+          print("ARCHIVE_BYTES", len(b), "HEAD", b[:16].hex(), "TAIL", b[-32:].hex())
+          print("ZIP_SIGNATURES", {sig.hex(): [i for i in range(len(b)) if b.startswith(sig, i)][:20] for sig in (b"PK\\x03\\x04", b"PK\\x01\\x02", b"PK\\x05\\x06")})
+          try:
+              with zipfile.ZipFile(p) as z:
+                  print("ZIP_ENTRIES", z.namelist())
+                  print("ZIP_TEST", z.testzip())
+          except Exception as e:
+              print("ZIP_ERROR", repr(e))
+          PY
+          unzip -t migration/alveus-dock-0.1.2-source.zip || true
           unzip -q migration/alveus-dock-0.1.2-source.zip -d /tmp/alveus-dock-import
           test -d /tmp/alveus-dock-import/alveus-dock
           cp -a /tmp/alveus-dock-import/alveus-dock/. .

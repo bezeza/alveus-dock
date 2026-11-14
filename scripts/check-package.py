@@ -140,7 +140,12 @@ assert qml.count("DropArea {") == 1
 qml_version = re.search(r'version:\s*"([^"]+)"', qml)
 assert qml_version and qml_version.group(1) == version, "Runtime log and package versions differ"
 layout_config = (ROOT / "package/contents/config/ConfigLayout.qml").read_text(encoding="utf-8")
-for token in ["cfg_dockLayoutMode", "cfg_layerSpacing", "Single row", "Dual layer", "Adaptive"]:
+for token in [
+    "cfg_dockLayoutMode", "cfg_layerSpacing",
+    "cfg_quickAccessIconSize", "cfg_runningTasksIconSize",
+    "cfg_quickAccessSpacing", "cfg_runningTasksSpacing",
+    "Single row", "Dual layer", "Adaptive"
+]:
     assert token in layout_config, f"Missing layout control: {token}"
 
 assert "dockLayoutMode" in (ROOT / "package/contents/config/main.xml").read_text(encoding="utf-8")

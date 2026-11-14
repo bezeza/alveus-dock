@@ -124,8 +124,12 @@ PlasmoidItem {
     Plasmoid.backgroundHints: PlasmaCore.Types.NoBackground
     Plasmoid.constraintHints: Plasmoid.CanFillArea
 
-    Layout.minimumWidth: vertical ? panelThickness : Math.max(itemExtent, quickAccessItemExtent) + dockPadding * 2
-    Layout.minimumHeight: vertical ? Math.max(itemExtent, quickAccessItemExtent) + dockPadding * 2 : panelThickness
+    Layout.minimumWidth: vertical
+        ? panelThickness
+        : Math.max(itemExtent, quickAccessItemExtent, runningTasksItemExtent) + dockPadding * 2
+    Layout.minimumHeight: vertical
+        ? Math.max(itemExtent, quickAccessItemExtent, runningTasksItemExtent) + dockPadding * 2
+        : panelThickness
 
     Layout.preferredWidth: vertical ? panelThickness : panelLength
     Layout.preferredHeight: vertical ? panelLength : panelThickness

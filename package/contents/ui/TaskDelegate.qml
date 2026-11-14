@@ -313,7 +313,7 @@ Item {
 
     Controls.BusyIndicator {
         anchors.centerIn: appIcon
-        width: dockRoot.iconSize * 0.58
+        width: dockRoot.iconSizeForTask(delegateRoot.model.IsLauncher) * 0.58
         height: width
         running: !!delegateRoot.model.IsStartup
         visible: running

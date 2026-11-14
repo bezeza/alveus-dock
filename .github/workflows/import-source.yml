@@ -26,17 +26,26 @@ jobs:
           mkdir -p /tmp/alveus-dock-import
           python3 - <<'PY'
           from pathlib import Path
-          import struct, zipfile
-          p = Path("migration/alveus-dock-0.1.2-source.zip")
-          b = p.read_bytes()
-          print("ARCHIVE_BYTES", len(b), "HEAD", b[:16].hex(), "TAIL", b[-32:].hex())
-          print("ZIP_SIGNATURES", {sig.hex(): [i for i in range(len(b)) if b.startswith(sig, i)][:20] for sig in (b"PK\\x03\\x04", b"PK\\x01\\x02", b"PK\\x05\\x06")})
-          try:
-              with zipfile.ZipFile(p) as z:
-                  print("ZIP_ENTRIES", z.namelist())
-                  print("ZIP_TEST", z.testzip())
-          except Exception as e:
-              print("ZIP_ERROR", repr(e))
+          import struct
+          b = Path("migration/alveus-dock-0.1.2-source.zip").read_bytes()
+          print("SIZE", len(b), "HEAD", b[:16].hex(), "TAIL", b[-32:].hex())
+          for sig in (b"PK\\x03\\x04", b"PK\\x01\\x02", b"PK\\x05\\x06"):
+              pos=[]; i=0
+              while True:
+                  i=b.find(sig,i)
+                  if i<0: break
+                  pos.append(i); i+=1
+              print("SIG", sig.hex(), pos[:100], "COUNT", len(pos))
+          eocd=b.rfind(b"PK\\x05\\x06")
+          if eocd>=0:
+              fields=struct.unpack_from("<4s4H2LH",b,eocd)
+              print("EOCD", fields, "at", eocd)
+              cd_offset=fields[6]; cd_size=fields[5]
+              print("CENTRAL_EXPECTED",cd_offset,cd_size,"BYTES",b[cd_offset:cd_offset+32].hex())
+              for delta in range(-16,17):
+                  off=cd_offset+delta
+                  if b[off:off+4]==b"PK\\x01\\x02":
+                      print("CENTRAL_FOUND_DELTA",delta,"OFFSET",off)
           PY
           unzip -t migration/alveus-dock-0.1.2-source.zip || true
           unzip -q migration/alveus-dock-0.1.2-source.zip -d /tmp/alveus-dock-import

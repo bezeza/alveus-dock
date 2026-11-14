@@ -25,26 +25,20 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          import struct, zlib
+          import struct
           b=Path("migration/alveus-dock-0.1.2-source.zip").read_bytes()
-          sig=bytes.fromhex("504b0304")
-          offsets=[]; i=0
+          sig=bytes.fromhex("504b0102")
+          positions=[]; i=0
           while True:
               i=b.find(sig,i)
               if i<0: break
-              offsets.append(i); i+=4
-          print("LOCAL_SIGNATURES",offsets)
-          for pos in offsets:
-              v,flags,method,mt,md,crc,cs,us,nl,el=struct.unpack_from("<HHHHHIIIHH",b,pos+4)
-              name=b[pos+30:pos+30+nl].decode("utf-8","replace")
-              start=pos+30+nl+el
-              payload=b[start:start+cs]
-              try:
-                  raw=zlib.decompress(payload,-15) if method==8 else payload
-                  ok=(len(raw)==us and (zlib.crc32(raw)&0xffffffff)==crc)
-                  print("ENTRY_OK" if ok else "ENTRY_BADCRC",pos,repr(name),"flags",flags,"method",method,"csize",cs,"usize",us,"name_len",nl,"data_start",start,"data",payload[:8].hex(),"raw_len",len(raw),"crc",hex(zlib.crc32(raw)&0xffffffff))
-              except Exception as e:
-                  print("ENTRY_FAIL",pos,repr(name),"flags",flags,"method",method,"csize",cs,"usize",us,"name_len",nl,"data_start",start,"data",payload[:8].hex(),repr(e))
+              positions.append(i); i+=4
+          print("CENTRAL_SIGNATURES",positions)
+          for pos in positions:
+              vals=struct.unpack_from("<4s6H3I5H2I",b,pos)
+              _,made,need,flags,method,mt,md,crc,cs,us,nl,el,cl,disk,ia,ea,lo=vals
+              name=b[pos+46:pos+46+nl]
+              print("CENTRAL",pos,"flags",flags,"method",method,"csize",cs,"usize",us,"name_len",nl,"extra",el,"comment",cl,"local_offset",lo,"name",repr(name))
           PY
           false
 

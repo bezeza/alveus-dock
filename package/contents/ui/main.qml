@@ -213,6 +213,10 @@ PlasmoidItem {
         Qt.callLater(root.syncTaskVisualGroups);
     }
 
+    function sourceIndexFromDelegate(delegateItem) {
+        return delegateItem ? delegateItem.sourceIndex : -1;
+    }
+
     function addDroppedLaunchers(urls) {
         if (!urls || urls.length === 0) {
             logWarning("launcher-drop-empty", {});
@@ -516,7 +520,7 @@ PlasmoidItem {
             const reorderViewIndex = reorderList.indexAt(reorderPoint.x, reorderPoint.y);
             const reorderDelegate = reorderViewIndex >= 0
                 ? reorderList.itemAtIndex(reorderViewIndex) : null;
-            const reorderTargetIndex = reorderDelegate ? reorderDelegate["sourceIndex"] : -1;
+            const reorderTargetIndex = root.sourceIndexFromDelegate(reorderDelegate);
 
             // Internal drag is restricted to the quick-access layer in split mode.
             if (drop.source && drop.source.dockIndex !== undefined) {
@@ -596,7 +600,7 @@ PlasmoidItem {
             const taskViewIndex = taskList.indexAt(taskPoint.x, taskPoint.y);
             const taskDelegate = taskViewIndex >= 0
                 ? taskList.itemAtIndex(taskViewIndex) : null;
-            const targetIndex = taskDelegate ? taskDelegate["sourceIndex"] : -1;
+            const targetIndex = root.sourceIndexFromDelegate(taskDelegate);
 
             if (drop.urls && drop.urls.length > 0 && targetIndex >= 0) {
                 const targetModelIndex = taskModel.makeModelIndex(targetIndex);

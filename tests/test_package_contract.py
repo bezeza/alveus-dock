@@ -283,8 +283,9 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("sourceIndex: DelegateModel.itemsIndex", self.qml)
         self.assertIn("return taskModel.makeModelIndex(sourceIndex)", self.task_delegate)
         self.assertIn("delegateRoot.modelIndex(),", self.task_delegate)
-        self.assertIn('taskDelegate ? taskDelegate["sourceIndex"] : -1', self.qml)
-        self.assertIn('reorderDelegate ? reorderDelegate["sourceIndex"] : -1', self.qml)
+        self.assertIn("function sourceIndexFromDelegate(delegateItem)", self.qml)
+        self.assertIn("root.sourceIndexFromDelegate(taskDelegate)", self.qml)
+        self.assertIn("root.sourceIndexFromDelegate(reorderDelegate)", self.qml)
 
     def test_project_has_performance_diagnostic(self):
         self.assertTrue((ROOT / "docs/PERFORMANCE.md").is_file())

@@ -19,28 +19,110 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Recover source files from archive local records
+      - name: Recover and verify source files
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          import struct
-          b=Path("migration/alveus-dock-0.1.2-source.zip").read_bytes()
-          sig=bytes.fromhex("504b0102")
-          positions=[]; i=0
+          import struct, zlib
+
+          archive = Path("migration/alveus-dock-0.1.2-source.zip")
+          data = archive.read_bytes()
+          local_sig = bytes.fromhex("504b0304")
+          central_sig = bytes.fromhex("504b0102")
+
+          local_offsets = []
+          cursor = 0
           while True:
-              i=b.find(sig,i)
-              if i<0: break
-              positions.append(i); i+=4
-          print("CENTRAL_SIGNATURES",positions)
-          for pos in positions:
-              vals=struct.unpack_from("<4s6H3I5H2I",b,pos)
-              _,made,need,flags,method,mt,md,crc,cs,us,nl,el,cl,disk,ia,ea,lo=vals
-              name=b[pos+46:pos+46+nl]
-              print("CENTRAL",pos,"flags",flags,"method",method,"csize",cs,"usize",us,"name_len",nl,"extra",el,"comment",cl,"local_offset",lo,"name",repr(name))
+              cursor = data.find(local_sig, cursor)
+              if cursor < 0:
+                  break
+              local_offsets.append(cursor)
+              cursor += 4
+
+          central_offsets = []
+          cursor = 0
+          while True:
+              cursor = data.find(central_sig, cursor)
+              if cursor < 0:
+                  break
+              central_offsets.append(cursor)
+              cursor += 4
+
+          paths = [
+              "README.md", "CHANGELOG.md", "LICENSE", ".gitignore",
+              "scripts/install-local.sh", "scripts/check-package.py",
+              "scripts/build-rpm.sh", "scripts/collect-logs.sh",
+              "scripts/uninstall-local.sh", "packaging/alveus-dock.spec",
+              "packaging/COPR.md", "docs/ROADMAP.md", "docs/LOGGING.md",
+              "docs/DEVELOPMENT_LOG.md", "package/metadata.json",
+              "package/contents/ui/main.qml",
+              "package/contents/config/config.qml",
+              "package/contents/config/ConfigAppearance.qml",
+              "package/contents/config/ConfigBehavior.qml",
+              "package/contents/config/main.xml",
+              ".github/workflows/build-rpm.yml",
+          ]
+
+          if len(local_offsets) != len(paths) or len(central_offsets) != len(paths):
+              raise SystemExit(
+                  f"Archive layout mismatch: local={len(local_offsets)}, "
+                  f"central={len(central_offsets)}, expected={len(paths)}"
+              )
+
+          output = Path("/tmp/alveus-dock-import/alveus-dock")
+          output.mkdir(parents=True, exist_ok=True)
+          recovered = []
+
+          for index, relative in enumerate(paths):
+              local = local_offsets[index]
+              next_boundary = (
+                  local_offsets[index + 1]
+                  if index + 1 < len(local_offsets)
+                  else central_offsets[0]
+              )
+
+              if index == 2:
+                  # The LICENSE central-directory record is malformed; its local header is intact.
+                  fields = struct.unpack_from("<HHHHHIIIHH", data, local + 4)
+                  _, flags, method, _, _, crc, compressed_size, size, _, _ = fields
+              else:
+                  central = central_offsets[index]
+                  fields = struct.unpack_from("<4s6H3I5H2I", data, central)
+                  (_, _, _, flags, method, _, _, crc, compressed_size, size,
+                   _, _, _, _, _, _, _) = fields
+
+              if flags & 0x08:
+                  raise SystemExit(f"Unsupported data descriptor for {relative}")
+              if method != 8:
+                  raise SystemExit(f"Unexpected compression method {method} for {relative}")
+
+              payload_start = next_boundary - compressed_size
+              if payload_start < local + 30 or payload_start > next_boundary:
+                  raise SystemExit(f"Invalid payload bounds for {relative}")
+
+              payload = data[payload_start:next_boundary]
+              content = zlib.decompress(payload, -15)
+              actual_crc = zlib.crc32(content) & 0xffffffff
+
+              if len(content) != size or actual_crc != crc:
+                  raise SystemExit(
+                      f"Integrity check failed for {relative}: "
+                      f"size {len(content)}/{size}, CRC {actual_crc:08x}/{crc:08x}"
+                  )
+
+              destination = output / relative
+              destination.parent.mkdir(parents=True, exist_ok=True)
+              # Keep the full GPL-3.0 license already created in the new repository.
+              if relative != "LICENSE":
+                  destination.write_bytes(content)
+              recovered.append((relative, len(content)))
+
+          print("RECOVERED_AND_VERIFIED", len(recovered), recovered)
           PY
-          false
+          cp -a /tmp/alveus-dock-import/alveus-dock/. .
+          rm -rf migration
 
       - name: Commit imported source
         shell: bash

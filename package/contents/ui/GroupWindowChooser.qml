@@ -57,6 +57,11 @@ PlasmaCore.PopupPlasmaWindow {
         implicitWidth: 292
         implicitHeight: chooserColumn.implicitHeight + 16
         radius: 12
+        focus: true
+        Keys.onEscapePressed: event => {
+            chooser.visible = false;
+            event.accepted = true;
+        }
         color: Kirigami.Theme.backgroundColor
         border.width: 1
         border.color: Kirigami.Theme.disabledTextColor
@@ -155,9 +160,25 @@ PlasmaCore.PopupPlasmaWindow {
                     chooser.maxVisibleRows * 46
                 )
                 clip: true
+                focus: true
+                currentIndex: 0
                 reuseItems: false
                 boundsBehavior: Flickable.StopAtBounds
                 model: chooser.visible ? windowModel : null
+
+                Keys.onEscapePressed: event => {
+                    chooser.visible = false;
+                    event.accepted = true;
+                }
+
+                Keys.onReturnPressed: event => {
+                    const childIndex = chooser.modelIndexForChild(currentIndex);
+                    if (childIndex) {
+                        chooser.activateRequested(childIndex);
+                    }
+                    chooser.visible = false;
+                    event.accepted = true;
+                }
             }
         }
     }

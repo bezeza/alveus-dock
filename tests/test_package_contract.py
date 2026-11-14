@@ -243,6 +243,7 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("cfg_runningTasksSpacing", self.config_qml)
         for label in ["Single row", "Dual layer", "Adaptive"]:
             self.assertIn(label, self.config_qml)
+        self.assertIn("Increase the Plasma panel thickness", self.config_qml)
 
     def test_dual_layout_uses_one_native_model_with_two_filtered_views(self):
         self.assertIn("separateLaunchers: root.splitLayoutEnabled", self.qml)
@@ -269,6 +270,12 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("root.runningTasksItemExtent", self.qml)
         self.assertIn("root.quickAccessSpacing", self.qml)
         self.assertIn("root.runningTasksSpacing", self.qml)
+        self.assertIn("quickAccessIconSize + 8", self.qml)
+        self.assertIn("runningTasksIconSize + 8", self.qml)
+        self.assertIn(
+            "quickAccessItemExtent + runningTasksItemExtent + layerSpacing + dockPadding * 2",
+            self.qml,
+        )
         self.assertIn("Layout.preferredHeight: vertical ? panelLength : panelThickness", self.qml)
 
     def test_running_layer_is_not_manually_reordered(self):

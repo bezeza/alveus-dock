@@ -124,9 +124,13 @@ PlasmoidItem {
 
     Layout.minimumWidth: vertical
         ? panelThickness
-        : Math.max(itemExtent, quickAccessItemExtent, runningTasksItemExtent) + dockPadding * 2
+        : (splitLayoutEnabled
+            ? Math.max(quickAccessItemExtent, runningTasksItemExtent)
+            : itemExtent) + dockPadding * 2
     Layout.minimumHeight: vertical
-        ? Math.max(itemExtent, quickAccessItemExtent, runningTasksItemExtent) + dockPadding * 2
+        ? (splitLayoutEnabled
+            ? Math.max(quickAccessItemExtent, runningTasksItemExtent)
+            : itemExtent) + dockPadding * 2
         : panelThickness
 
     Layout.preferredWidth: vertical ? panelThickness : panelLength

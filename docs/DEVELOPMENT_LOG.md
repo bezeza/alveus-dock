@@ -15,7 +15,9 @@ This file records dated engineering work. It is not a runtime error log and is n
 - Added horizontal two-row and vertical two-column geometry; Adaptive hides the empty running layer.
 
 ### Validation
-- GitHub Actions, strict QML lint and Fedora RPM build are pending.
+- GitHub Actions passed structural checks, all 25 Python regression tests, Python/shell syntax checks, strict QML lint, Fedora 44 RPM build, RPM metadata/file/dependency verification and artifact upload.
+- Successful CI run: https://github.com/bezeza/alveus-dock/actions/runs/43617197076.
+- Default Dual thickness is 96 logical pixels with 32 px icons in each layer, 4 px layer spacing and 6 px outer padding.
 - A live Plasma session is still required to verify panel thickness, both orientations, launcher persistence, grouped windows and Magic Lamp geometry.
 
 ### Next

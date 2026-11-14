@@ -69,7 +69,7 @@ KCMUtils.SimpleKCM {
         QQC2.Label {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            text: i18n("Dual and Adaptive layouts need additional panel thickness. Increase the Plasma panel height if the second layer is clipped.")
+            text: i18n("Dual and Adaptive layouts need additional panel thickness. Increase the Plasma panel thickness if the second layer is clipped.")
         }
     }
 }

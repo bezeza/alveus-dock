@@ -6,7 +6,7 @@ This file records dated engineering work. It is not a runtime error log and is n
 
 ### Implemented
 - Added Single, Dual and Adaptive layout modes, with Single remaining the compatibility default.
-- Added a Layout settings page and configurable spacing between layers.
+- Added a Layout settings page with independent icon sizes and spacing for Quick Access and Running Windows, plus configurable spacing between layers.
 - Split the existing KDE TasksModel presentation into Quick Access launchers and Running Windows using Qt DelegateModel groups.
 - Kept KDE as the single source of truth for launchers, windows, grouping, activation and close actions.
 - Extracted the shared task icon delegate into TaskDelegate.qml so the same interaction logic serves every layout.

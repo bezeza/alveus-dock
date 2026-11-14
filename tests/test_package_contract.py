@@ -66,6 +66,10 @@ class PackageContractTests(unittest.TestCase):
             "iconSpacing": "iconSpacing",
             "hoverScale": "hoverScale",
             "layerSpacing": "layerSpacing",
+            "quickAccessIconSize": "quickAccessIconSize",
+            "runningTasksIconSize": "runningTasksIconSize",
+            "quickAccessSpacing": "quickAccessSpacing",
+            "runningTasksSpacing": "runningTasksSpacing",
         }
         for setting, control_id in controls.items():
             entry = self.kcfg.find(f".//{KCFG_NS}entry[@name='{setting}']")
@@ -223,8 +227,20 @@ class PackageContractTests(unittest.TestCase):
         self.assertEqual(mode.find(f"{KCFG_NS}min").text, "0")
         self.assertEqual(mode.find(f"{KCFG_NS}max").text, "2")
         self.assertEqual(spacing.find(f"{KCFG_NS}default").text, "4")
+        for name in ["quickAccessIconSize", "runningTasksIconSize"]:
+            entry = self.kcfg.find(f".//{KCFG_NS}entry[@name='{name}']")
+            self.assertIsNotNone(entry)
+            self.assertEqual(entry.find(f"{KCFG_NS}default").text, "40")
+        for name in ["quickAccessSpacing", "runningTasksSpacing"]:
+            entry = self.kcfg.find(f".//{KCFG_NS}entry[@name='{name}']")
+            self.assertIsNotNone(entry)
+            self.assertEqual(entry.find(f"{KCFG_NS}default").text, "6")
         self.assertIn("cfg_dockLayoutMode", self.config_qml)
         self.assertIn("cfg_layerSpacing", self.config_qml)
+        self.assertIn("cfg_quickAccessIconSize", self.config_qml)
+        self.assertIn("cfg_runningTasksIconSize", self.config_qml)
+        self.assertIn("cfg_quickAccessSpacing", self.config_qml)
+        self.assertIn("cfg_runningTasksSpacing", self.config_qml)
         for label in ["Single row", "Dual layer", "Adaptive"]:
             self.assertIn(label, self.config_qml)
 
@@ -248,8 +264,11 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("id: singleDockList", self.qml)
         self.assertIn("id: quickAccessList", self.qml)
         self.assertIn("id: runningTasksList", self.qml)
-        self.assertIn("root.vertical ? root.itemExtent", self.qml)
-        self.assertIn("root.itemExtent + root.layerSpacing", self.qml)
+        self.assertIn("root.vertical ? root.quickAccessItemExtent", self.qml)
+        self.assertIn("root.quickAccessItemExtent + root.layerSpacing", self.qml)
+        self.assertIn("root.runningTasksItemExtent", self.qml)
+        self.assertIn("root.quickAccessSpacing", self.qml)
+        self.assertIn("root.runningTasksSpacing", self.qml)
         self.assertIn("Layout.preferredHeight: vertical ? panelLength : panelThickness", self.qml)
 
     def test_running_layer_is_not_manually_reordered(self):

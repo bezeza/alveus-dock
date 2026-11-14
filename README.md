@@ -51,6 +51,7 @@ KWin effects such as Magic Lamp remain KDE/KWin features and are not reimplement
 - Current-desktop and current-screen filters.
 - Optional application grouping, disabled by default.
 - Dock layout mode: Single, Dual or Adaptive.
+- Independent icon sizes and spacing for Quick Access and Running Windows.
 - Spacing between the two layers.
 
 ### Diagnostics

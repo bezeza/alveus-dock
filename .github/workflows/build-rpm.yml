@@ -34,11 +34,19 @@ jobs:
       - name: Run structural checks
         run: python3 scripts/check-package.py
 
+      - name: Run regression tests
+        run: python3 -m unittest discover -s tests -v
+
+      - name: Validate Python and shell scripts
+        run: |
+          python3 -m py_compile scripts/check-package.py scripts/profile-plasmashell.py tests/test_package_contract.py
+          bash -n scripts/build-rpm.sh scripts/collect-logs.sh scripts/install-local.sh scripts/uninstall-local.sh
+
       - name: Lint QML
         run: |
           export PATH=/usr/lib64/qt6/bin:$PATH
           export QML_IMPORT_PATH=/usr/lib64/qt6/qml
-          qmllint -I /usr/lib64/qt6/qml \
+          qmllint --max-warnings 0 -I /usr/lib64/qt6/qml \
             package/contents/ui/main.qml \
             package/contents/config/config.qml \
             package/contents/config/ConfigAppearance.qml \

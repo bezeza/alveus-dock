@@ -8,16 +8,16 @@ journal.
 
 Log prefixes:
 
-- `[AlveusDock][INFO]` — lifecycle, task count, launcher changes and user actions.
+- `[AlveusDock][INFO]` — lifecycle, task count, launcher changes and dispatched user actions.
 - `[AlveusDock][WARN]` — rejected or incomplete operations.
-- `[AlveusDock][ERROR]` — caught action failures.
+- `[AlveusDock][ERROR]` — caught action failures. Only the exception type is recorded, not its raw message.
 
 Qt/Plasma QML parser and runtime errors are also expected to appear in the
 Plasma journal with the QML file and line number.
 
 ## Privacy
 
-The applet deliberately does not log:
+The applet deliberately does not log raw exception messages because they can contain file paths or other session data. It also does not log:
 
 - application names or window titles;
 - file names, full paths or dropped URLs;
@@ -55,6 +55,8 @@ bash scripts/collect-logs.sh "2 hours ago"
 
 If the journal has no matching records, the script writes that fact into the
 output file. It does not silently claim that the applet is error-free.
+
+Action log entries record that a KDE API call was dispatched. Some KDE task APIs return no result, so an INFO entry is not proof that the window manager completed the requested action.
 
 ## Current limitation
 

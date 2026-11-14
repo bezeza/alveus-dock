@@ -6,10 +6,11 @@ This document contains **future work only**. Completed changes belong in CHANGEL
 
 Build a small, responsive KDE Plasma dock that feels more expressive than Icons-Only Task Manager without becoming a resource-heavy desktop environment of its own.
 
-## Next: 0.1.x stabilization
+## Next: 0.1.x stabilization (0.1.3)
 
 - [ ] Run the applet in a clean Fedora 44 KDE Plasma 6.8.x session.
-- [ ] Resolve all QML parser, import and runtime warnings.
+- [ ] Compare whole-shell CPU/RSS samples with Alveus Dock disabled and enabled using docs/PERFORMANCE.md.
+- [ ] Resolve all QML parser, import and runtime warnings in a live Plasma session.
 - [ ] Verify launcher pinning, unpinning and persistence after Plasma restart.
 - [ ] Verify activation, minimizing, close and new-instance actions.
 - [ ] Verify internal drag/reorder and external .desktop launcher drops.

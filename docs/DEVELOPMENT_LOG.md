@@ -1,5 +1,27 @@
 # Alveus Dock — Development Log
 
+## 2026-11-14 — 0.1.3 stabilization branch
+
+### Implemented
+- Added bound component behavior to make outer QML IDs explicit inside the task delegate.
+- Reset hover and finite animation state when ListView pools or reuses delegates.
+- Synchronize launcher order after successful task reordering, as required by KDE TasksModel.
+- Validate drag source/target indices before calling the task model.
+- Changed exception diagnostics to record only the exception type, avoiding raw messages that can contain private paths.
+- Added a strict qmllint policy, regression tests for package/configuration contracts, and a plasmashell CPU/RSS sampling tool.
+- Updated applet metadata, runtime diagnostics and RPM spec to version 0.1.3.
+
+### Validation
+- KDE TaskManager API documentation confirms move() returns a boolean and syncLaunchers() must be called after move operations to persist launcher ordering.
+- CI validation is pending for this branch.
+- Live Plasma runtime and performance tests remain pending because no KDE desktop session is available here.
+
+### Next
+- Review QML lint and regression test results from GitHub Actions.
+- Fix any new CI findings.
+- Test drag reorder, launcher persistence, delegate recycling and hover effects in a live Plasma session.
+
+
 This file records dated engineering work. It is not a runtime error log and is not the future roadmap.
 
 ## 2026-11-14 — dedicated repository and packaging audit

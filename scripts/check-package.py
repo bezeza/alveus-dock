@@ -16,6 +16,7 @@ version = metadata["KPlugin"]["Version"]
 spec_version = re.search(r"^Version:\s+(\S+)", spec, re.MULTILINE)
 assert metadata["KPlugin"]["Id"] == APPLET_ID
 assert metadata["KPackageStructure"] == "Plasma/Applet"
+assert metadata["X-Plasma-API-Minimum-Version"] == "6.8"
 assert metadata["KPlugin"]["License"] == EXPECTED_LICENSE
 assert spec_version and spec_version.group(1) == version, "RPM and applet versions differ"
 assert re.search(r"^License:\s+GPL-3\.0-only$", spec, re.MULTILINE)

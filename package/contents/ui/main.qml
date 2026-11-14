@@ -23,6 +23,8 @@ PlasmoidItem {
     readonly property int dockPadding: 6
     readonly property real hoverScale: Plasmoid.configuration.hoverScale / 100.0
 
+    signal iconGeometryRefreshRequested()
+
     // Diagnostics are written to the Plasma/Qt journal. Do not log window titles,
     // application names, file paths or dropped URLs.
     function logInfo(eventName, details) {
@@ -98,12 +100,7 @@ PlasmoidItem {
     }
 
     function publishAllDelegateGeometries() {
-        for (let i = 0; i < dockList.count; ++i) {
-            const item = dockList.itemAtIndex(i);
-            if (item) {
-                item.publishIconGeometry();
-            }
-        }
+        iconGeometryRefreshRequested();
     }
 
     function addDroppedLaunchers(urls) {
@@ -319,6 +316,14 @@ PlasmoidItem {
 
             function scheduleIconGeometryPublish() {
                 Qt.callLater(publishIconGeometry);
+            }
+
+            Connections {
+                target: root
+
+                function onIconGeometryRefreshRequested() {
+                    delegateRoot.scheduleIconGeometryPublish();
+                }
             }
 
             onXChanged: scheduleIconGeometryPublish()

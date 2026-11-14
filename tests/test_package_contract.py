@@ -119,6 +119,9 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("taskModel.requestPublishDelegateGeometry(", self.qml)
         self.assertIn("delegateRoot.model.IsWindow", self.qml)
         self.assertIn("publishIconGeometry();", self.qml)
+        minimize_pos = self.qml.find('root.runAction("toggle-minimized"')
+        publish_pos = self.qml.rfind("publishIconGeometry();", 0, minimize_pos)
+        self.assertGreaterEqual(publish_pos, 0)
         self.assertIn(
             "delegateRoot.modelIndex(),\n                    geometry,\n                    delegateRoot",
             self.qml,
@@ -133,6 +136,8 @@ class PackageContractTests(unittest.TestCase):
             "onLocationChanged()",
             "onScreenGeometryChanged()",
             "root.publishAllDelegateGeometries()",
+            "signal iconGeometryRefreshRequested()",
+            "function onIconGeometryRefreshRequested()",
             "delegateRoot.scheduleIconGeometryPublish()",
         ]:
             self.assertIn(token, self.qml)

@@ -124,7 +124,7 @@ class PackageContractTests(unittest.TestCase):
     def test_reorder_rejects_out_of_range_indices(self):
         self.assertIn("Number.isInteger(sourceIndex)", self.qml)
         self.assertIn("sourceIndex >= taskModel.count", self.qml)
-        self.assertIn("targetIndex >= taskModel.count", self.qml)
+        self.assertIn("reorderTargetIndex >= taskModel.count", self.qml)
 
     def test_grouping_setting_uses_native_tasks_model(self):
         entry = self.kcfg.find(f".//{KCFG_NS}entry[@name='groupApplications']")
@@ -153,13 +153,13 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("chooser.closeRequested(childIndex)", self.group_chooser)
 
     def test_group_parent_has_window_count_badge_and_chooser(self):
-        self.assertIn("delegateRoot.model.IsGroupParent", self.qml)
-        self.assertIn("root.toggleGroupChooser(delegateRoot)", self.qml)
+        self.assertIn("delegateRoot.model.IsGroupParent", self.task_delegate)
+        self.assertIn("dockRoot.toggleGroupChooser(delegateRoot)", self.task_delegate)
         self.assertIn("id: groupWindowChooser", self.qml)
-        self.assertIn("root.groupVisualParent === delegateRoot", self.qml)
-        self.assertIn("id: windowCountBadge", self.qml)
-        self.assertIn("delegateRoot.childCount > 1", self.qml)
-        self.assertIn('qsTr("Ungroup windows")', self.qml)
+        self.assertIn("dockRoot.groupVisualParent === delegateRoot", self.task_delegate)
+        self.assertIn("id: windowCountBadge", self.task_delegate)
+        self.assertIn("delegateRoot.childCount > 1", self.task_delegate)
+        self.assertIn('qsTr("Ungroup windows")', self.task_delegate)
 
     def test_grouped_windows_keep_kde_minimize_geometry(self):
         self.assertIn(
@@ -193,8 +193,8 @@ class PackageContractTests(unittest.TestCase):
         publish_pos = self.task_delegate.rfind("publishIconGeometry();", 0, minimize_pos)
         self.assertGreaterEqual(publish_pos, 0)
         self.assertIn(
-            "delegateRoot.modelIndex(),\n                    geometry,\n                    delegateRoot",
-            self.qml,
+            "delegateRoot.modelIndex(),\n            geometry,\n            delegateRoot",
+            self.task_delegate,
         )
 
     def test_window_geometry_is_refreshed_after_layout_changes(self):
@@ -258,7 +258,7 @@ class PackageContractTests(unittest.TestCase):
             "enabled: Plasmoid.configuration.enableDragReorder && delegateRoot.allowReorder",
             self.task_delegate,
         )
-        self.assertIn("sourceIsLauncher || !targetIsLauncher", self.qml)
+        self.assertIn("if (!sourceIsLauncher || !targetIsLauncher)", self.qml)
 
     def test_filtered_views_keep_source_model_indices(self):
         self.assertIn("sourceIndex: DelegateModel.itemsIndex", self.qml)

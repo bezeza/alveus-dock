@@ -3,6 +3,8 @@
  * Alveus Dock — a small KDE Plasma task dock.
  */
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls as Controls
 import QtQuick.Layouts
@@ -21,6 +23,8 @@ PlasmoidItem {
     readonly property int dockPadding: 6
     readonly property real hoverScale: Plasmoid.configuration.hoverScale / 100.0
 
+    signal iconGeometryRefreshRequested()
+
     // Diagnostics are written to the Plasma/Qt journal. Do not log window titles,
     // application names, file paths or dropped URLs.
     function logInfo(eventName, details) {
@@ -32,8 +36,11 @@ PlasmoidItem {
     }
 
     function logError(eventName, error) {
-        const message = error && error.message ? error.message : String(error);
-        console.error("[AlveusDock][ERROR]", eventName, message);
+        // Exception messages can contain paths or other user data.
+        const errorType = error && error.name ? String(error.name) : "Error";
+        console.error("[AlveusDock][ERROR]", eventName, JSON.stringify({
+            type: errorType
+        }));
     }
 
     function runAction(actionName, callback) {
@@ -42,7 +49,8 @@ PlasmoidItem {
             if (result === false) {
                 logWarning("action-rejected", { name: actionName });
             } else {
-                logInfo("action", { name: actionName });
+                // This records dispatch, not confirmation of window-manager completion.
+                logInfo("action-dispatched", { name: actionName });
             }
             return result;
         } catch (error) {
@@ -76,6 +84,23 @@ PlasmoidItem {
         return value.startsWith("applications:")
                || value.endsWith(".desktop")
                || value.includes(".desktop?");
+    }
+
+    // Convert a delegate's bounds to screen coordinates. KDE's task model
+    // forwards this geometry to KWin for minimize-to-icon effects.
+    function globalRect(item) {
+        const topLeft = item.mapToGlobal(0, 0);
+        const bottomRight = item.mapToGlobal(item.width, item.height);
+        return Qt.rect(
+            topLeft.x,
+            topLeft.y,
+            bottomRight.x - topLeft.x,
+            bottomRight.y - topLeft.y
+        );
+    }
+
+    function publishAllDelegateGeometries() {
+        iconGeometryRefreshRequested();
     }
 
     function addDroppedLaunchers(urls) {
@@ -113,6 +138,20 @@ PlasmoidItem {
         return addedCount > 0;
     }
 
+    // Panel placement can settle a little after Plasma reports a location or
+    // screen change. Publish after the layout has finished moving.
+    Timer {
+        id: iconGeometryTimer
+        interval: 200
+        repeat: false
+        onTriggered: root.publishAllDelegateGeometries()
+    }
+
+    onXChanged: iconGeometryTimer.restart()
+    onYChanged: iconGeometryTimer.restart()
+    onWidthChanged: iconGeometryTimer.restart()
+    onHeightChanged: iconGeometryTimer.restart()
+
     TaskManager.TasksModel {
         id: taskModel
 
@@ -130,6 +169,7 @@ PlasmoidItem {
 
         onCountChanged: {
             root.logInfo("task-count-changed", { count: count });
+            iconGeometryTimer.restart();
         }
 
         onLauncherListChanged: {
@@ -145,7 +185,7 @@ PlasmoidItem {
 
     Component.onCompleted: {
         root.logInfo("applet-started", {
-            version: "0.1.2",
+            version: "0.1.3",
             iconSize: root.iconSize,
             vertical: root.vertical
         });
@@ -153,6 +193,22 @@ PlasmoidItem {
 
     Component.onDestruction: {
         root.logInfo("applet-stopped", {});
+    }
+
+    Connections {
+        target: Plasmoid
+
+        function onLocationChanged() {
+            iconGeometryTimer.restart();
+        }
+    }
+
+    Connections {
+        target: Plasmoid.containment
+
+        function onScreenGeometryChanged() {
+            iconGeometryTimer.restart();
+        }
     }
 
     Connections {
@@ -212,14 +268,78 @@ PlasmoidItem {
                 }
             }
 
+            // ListView can recycle delegates. Reset transient visual state so an
+            // icon never inherits another application's hover or animation state.
+            ListView.onPooled: {
+                delegateRoot.hovered = false;
+                delegateRoot.launchScale = 1.0;
+                launchBounce.stop();
+                launchPulse.stop();
+                attentionReaction.stop();
+                energyPulse.opacity = 0;
+                energyPulse.scale = 0.45;
+                attentionRing.opacity = 0;
+                attentionRing.scale = 0.8;
+                contextMenu.close();
+            }
+
+            ListView.onReused: {
+                delegateRoot.hovered = false;
+                delegateRoot.launchScale = 1.0;
+                if (delegateRoot.demandingAttention
+                        && Plasmoid.configuration.enableAttentionReaction) {
+                    attentionReaction.restart();
+                }
+                delegateRoot.scheduleIconGeometryPublish();
+            }
+
             function modelIndex() {
                 return taskModel.makeModelIndex(index);
             }
+
+            function publishIconGeometry() {
+                if (!delegateRoot.visible
+                        || !delegateRoot.model
+                        || !delegateRoot.model.IsWindow
+                        || delegateRoot.model.IsLauncher
+                        || delegateRoot.model.IsStartup) {
+                    return;
+                }
+
+                const geometry = root.globalRect(delegateRoot);
+                taskModel.requestPublishDelegateGeometry(
+                    delegateRoot.modelIndex(),
+                    geometry,
+                    delegateRoot
+                );
+            }
+
+            function scheduleIconGeometryPublish() {
+                Qt.callLater(publishIconGeometry);
+            }
+
+            Connections {
+                target: root
+
+                function onIconGeometryRefreshRequested() {
+                    delegateRoot.scheduleIconGeometryPublish();
+                }
+            }
+
+            onXChanged: scheduleIconGeometryPublish()
+            onYChanged: scheduleIconGeometryPublish()
+            onWidthChanged: scheduleIconGeometryPublish()
+            onHeightChanged: scheduleIconGeometryPublish()
+            onModelChanged: scheduleIconGeometryPublish()
+
+            Component.onCompleted: scheduleIconGeometryPublish()
 
             function activateTask() {
                 const idx = modelIndex();
 
                 if (model.IsWindow && model.IsActive) {
+                    // Refresh the target immediately before asking KWin to minimize.
+                    publishIconGeometry();
                     root.runAction("toggle-minimized", () => taskModel.requestToggleMinimized(idx));
                 } else {
                     root.runAction("activate-window", () => taskModel.requestActivate(idx));
@@ -496,22 +616,52 @@ PlasmoidItem {
             const pointInList = mapToItem(dockList, drop.x, drop.y);
             const targetIndex = dockList.indexAt(pointInList.x, pointInList.y);
 
-            // Internal drag: reorder the source task to the row under the pointer.
+            // Internal drag: validate indices, move the task and synchronize
+            // the launchers so their persisted order matches the visible order.
             if (drop.source && drop.source.dockIndex !== undefined) {
                 const sourceIndex = Number(drop.source.dockIndex);
-                if (targetIndex >= 0 && sourceIndex !== targetIndex) {
-                    const moved = root.runAction(
-                        "reorder-task",
-                        () => taskModel.move(sourceIndex, targetIndex)
-                    );
-                    if (moved !== true) {
-                        root.logWarning("reorder-rejected", {
-                            sourceIndex: sourceIndex,
-                            targetIndex: targetIndex
-                        });
-                    }
+
+                if (!Plasmoid.configuration.enableDragReorder) {
+                    root.logWarning("reorder-disabled", {});
+                    return;
                 }
-                drop.acceptProposedAction();
+
+                if (!Number.isInteger(sourceIndex)
+                        || sourceIndex < 0
+                        || sourceIndex >= taskModel.count
+                        || targetIndex < 0
+                        || targetIndex >= taskModel.count) {
+                    root.logWarning("reorder-invalid-index", {
+                        sourceIndex: sourceIndex,
+                        targetIndex: targetIndex,
+                        taskCount: taskModel.count
+                    });
+                    return;
+                }
+
+                if (sourceIndex === targetIndex) {
+                    drop.acceptProposedAction();
+                    return;
+                }
+
+                const moved = root.runAction(
+                    "reorder-task",
+                    () => taskModel.move(sourceIndex, targetIndex)
+                );
+
+                if (moved === true) {
+                    root.runAction("sync-launchers", () => taskModel.syncLaunchers());
+                    root.logInfo("task-reordered", {
+                        sourceIndex: sourceIndex,
+                        targetIndex: targetIndex
+                    });
+                    drop.acceptProposedAction();
+                } else {
+                    root.logWarning("reorder-rejected", {
+                        sourceIndex: sourceIndex,
+                        targetIndex: targetIndex
+                    });
+                }
                 return;
             }
 

@@ -27,7 +27,11 @@ assert "Version 3, 29 June 2007" in license_text
 required = [
     "AGENTS.md",
     ".contextProperties.ini",
+    ".qmllint.ini",
     "README.md",
+    "tests/test_package_contract.py",
+    "docs/PERFORMANCE.md",
+    "scripts/profile-plasmashell.py",
     "CHANGELOG.md",
     "package/contents/ui/main.qml",
     "package/contents/config/config.qml",
@@ -55,13 +59,20 @@ for token in [
     "TaskManager.TasksModel",
     "requestActivate",
     "requestToggleMinimized",
+    "requestPublishDelegateGeometry",
+    "mapToGlobal(0, 0)",
+    "publishIconGeometry",
     "requestAddLauncher",
     "requestRemoveLauncher",
     "requestOpenUrls",
     "requestNewInstance",
     "requestClose",
     "taskModel.move",
+    "taskModel.syncLaunchers",
     "taskReorderingEnabled",
+    "ListView.onPooled",
+    "ListView.onReused",
+    "pragma ComponentBehavior: Bound",
     "launchBounce",
     "launchPulse",
     "attentionReaction",
@@ -110,6 +121,9 @@ for token in ["qmllint", "scripts/check-package.py", "scripts/build-rpm.sh", "ac
 
 assert "dropTarget" not in qml, "Stale dropTarget reference remains"
 assert qml.count("DropArea {") == 1
+qml_version = re.search(r'version:\s*"([^"]+)"', qml)
+assert qml_version and qml_version.group(1) == version, "Runtime log and package versions differ"
+assert "UnqualifiedAccess=error" in (ROOT / ".qmllint.ini").read_text(encoding="utf-8")
 assert "docs/SCREENSHOTS.md" in (ROOT / "README.md").read_text(encoding="utf-8")
 
 print(f"Alveus Dock {version} structural checks: OK")

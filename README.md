@@ -7,7 +7,7 @@ Alveus Dock is a lightweight, standalone dock applet for KDE Plasma 6. It uses K
 
 It is an independent applet, not a patch or replacement for KDE's Icons-Only Task Manager. It can be used on its own or alongside other Plasma panel widgets.
 
-> **Project status:** early prototype. The source and RPM packaging are in the repository, but a live Plasma 6.8 runtime test and real screenshots are still pending. CI checks do not replace testing in a running desktop session.
+> **Project status:** version 0.1.3 stabilization branch. Runtime testing in a live Plasma session is still required. The source and RPM packaging are in the repository, but a live Plasma 6.8 runtime test and real screenshots are still pending. CI checks do not replace testing in a running desktop session.
 
 ## Features
 
@@ -20,6 +20,7 @@ It is an independent applet, not a patch or replacement for KDE's Icons-Only Tas
 - Drop .desktop files or applications: URLs on the dock to pin launchers.
 - Drop files onto a running application icon to open them with that application.
 - Optional filtering to the current virtual desktop and current screen.
+- Publishes each running window's dock-icon geometry to KDE TaskManager so KWin can target the Alveus icon for minimize effects such as Magic Lamp.
 
 ### Motion and visual feedback
 - Smooth hover scaling.
@@ -29,7 +30,7 @@ It is an independent applet, not a patch or replacement for KDE's Icons-Only Tas
 - Active-window marker and startup busy indicator.
 - Animations are event-driven and finite. There is no permanent animation loop.
 
-KWin effects such as Magic Lamp remain KDE/KWin features and are not reimplemented by Alveus Dock.
+KWin effects such as Magic Lamp remain KDE/KWin features and are not reimplemented by Alveus Dock. Alveus only publishes the geometry of its running-window delegates through the native TaskManager API; the effect itself remains under KWin's control.
 
 ### Settings
 - Icon size, spacing and hover scale.
@@ -118,12 +119,17 @@ Remove the development install:
 bash scripts/uninstall-local.sh
 ~~~
 
+## Performance checks
+
+To compare whole-shell CPU and memory before and after enabling the dock, see **docs/PERFORMANCE.md** and run `python3 scripts/profile-plasmashell.py`. The measurement covers the entire `plasmashell` process, not the dock alone.
+
 ## Build and validation
 
-Run the structural checks:
+Run the structural checks and regression tests:
 
 ~~~bash
 python3 scripts/check-package.py
+python3 -m unittest discover -s tests -v
 ~~~
 
 Build the RPM:

@@ -4,19 +4,25 @@ All notable user-visible changes to Alveus Dock are recorded here. This file rec
 
 ## [Unreleased]
 
-### Changed
-- Moved the 0.1.2 source into the dedicated bezeza/alveus-dock repository.
-- Standardized project licensing metadata and source headers on GPL-3.0-only.
-- Reworked RPM source archive generation so its directory and version match the RPM spec.
+## [0.1.3] - Unreleased — stabilization
+
+### Fixed
+- Synchronize launcher order after a successful manual task reorder.
+- Validate drag source and target indices before modifying the task model.
+- Reset hover and animation state when ListView recycles a task delegate.
+- Prevent diagnostic logs from copying raw exception messages that may contain private paths.
 
 ### Added
-- GitHub Actions workflow for structural checks, QML lint and Fedora RPM builds.
-- AI-agent contribution rules in AGENTS.md.
-- Screenshot capture checklist and clearer Fedora installation instructions.
+- Strict QML lint policy for unqualified accesses.
+- Regression tests for package metadata, settings schema, drag reordering, delegate reuse and diagnostic privacy.
+- A plasmashell CPU/RSS sampler and repeatable performance test instructions.
+- Publish live running-window icon geometry through KDE TasksModel so KWin can use Alveus Dock icons as minimize-animation targets (including Magic Lamp where supported).
+- Refresh icon geometry after dock layout, panel location and screen changes.
+- Regression tests for KWin geometry publication and refresh behavior.
 
 ### Notes
-- Live Plasma runtime testing and real screenshots remain pending.
-- COPR has not been published; direct installation by package name is not active yet.
+- Live Plasma runtime testing and measurements on real hardware are still required.
+- Process-level performance samples cover all of plasmashell, not Alveus Dock in isolation.
 
 ## [0.1.2] - 2026-11-14 — diagnostics and project tracking
 
@@ -51,3 +57,4 @@ All notable user-visible changes to Alveus Dock are recorded here. This file rec
 - KDE TaskManager model integration.
 - Basic launcher/window actions and initial icon reactions.
 - Fedora RPM spec and initial RPM workflow draft.
+

@@ -4,7 +4,7 @@
     "Id": "org.bezeza.alveusdock",
     "Name": "Alveus Dock",
     "Description": "A lightweight dock for KDE Plasma 6 with launcher and task management, finite icon reactions and Fedora RPM support",
-    "Version": "0.1.2",
+    "Version": "0.1.3",
     "Category": "Windows and Tasks",
     "Icon": "preferences-system-windows",
     "License": "GPL-3.0-only",

@@ -53,9 +53,14 @@ Alveus Dock is a lightweight KDE Plasma 6 applet written in QML. The current tar
 
 Before proposing a change, run the checks available in the environment:
 
-1. python3 scripts/check-package.py
-2. qmllint against the applet and configuration QML using the installed Plasma/Qt QML modules
-3. bash scripts/build-rpm.sh on Fedora with the RPM build dependencies installed
+1. `python3 scripts/check-package.py`
+2. `python3 -m unittest discover -s tests -v`
+3. `qmllint --max-warnings 0` against the applet and configuration QML using installed Plasma/Qt QML modules
+4. `python3 -m py_compile scripts/check-package.py scripts/profile-plasmashell.py tests/test_package_contract.py`
+5. `bash -n` on all shell scripts
+6. `bash scripts/build-rpm.sh` on Fedora with the RPM build dependencies installed
+
+Keep `.qmllint.ini` warning policy strict; do not silence warnings merely to make CI green. Keep `.contextProperties.ini` limited to genuine Plasma context properties.
 
 A CI pass does not replace a live Plasma runtime test. Do not claim runtime validation, screenshot capture, or COPR publication unless it actually happened.
 

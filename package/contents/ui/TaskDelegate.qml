@@ -105,7 +105,6 @@ Item {
     onYChanged: scheduleIconGeometryPublish()
     onWidthChanged: scheduleIconGeometryPublish()
     onHeightChanged: scheduleIconGeometryPublish()
-    onModelChanged: scheduleIconGeometryPublish()
 
     Component.onCompleted: scheduleIconGeometryPublish()
 
@@ -136,6 +135,7 @@ Item {
     }
 
     onModelChanged: {
+        scheduleIconGeometryPublish();
         if (dockRoot.groupVisualParent === delegateRoot) {
             dockRoot.closeGroupChooser();
         }

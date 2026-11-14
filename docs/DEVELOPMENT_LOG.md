@@ -2,6 +2,15 @@
 
 This file records dated engineering work. It is not a runtime error log and is not the future roadmap.
 
+## 2026-11-14 — 0.3.0 runtime-readiness audit
+
+### Fixed
+- Consolidated duplicate `onModelChanged` handlers in the shared task delegate so model replacement both refreshes KWin icon geometry and closes a stale group chooser from one handler.
+
+### Validation
+- Added a regression test that rejects duplicate model-change handlers and verifies both responsibilities remain present.
+- Live Plasma behavior remains unverified until the applet can be run in a real desktop session.
+
 ## 2026-11-14 — 0.3.0 dual-layer layout implementation
 
 ### Implemented

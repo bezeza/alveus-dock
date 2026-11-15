@@ -8,7 +8,7 @@ This file records dated engineering work. It is not a runtime error log and it i
 - Keep the grouped Window Chooser's parent source row independent from the Quick Access launcher row when the chooser is anchored to a pinned launcher.
 - Close a transient group chooser and resynchronize the presentation groups when TaskManager rows move.
 - Republish KWin delegate geometry when a task's source-model row changes, even if its visual bounds stay in the same place.
-- Treat a non-empty conflicting AppId as a mismatch; use LauncherUrlWithoutIcon URL matching only when at least one AppId is missing.
+- Matched pinned launchers using KDE TaskManager::appsMatch semantics: equal non-empty AppIds match first, then LauncherUrlWithoutIcon is compared directly as the fallback, even when both IDs differ.
 - Classify drag-and-drop separately: consume duplicate .desktop launcher drops, reject mixed launcher/file batches, and prevent launcher URLs from falling through to the file-open path.
 
 ### Validation

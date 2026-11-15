@@ -390,6 +390,11 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("function findRunningTaskForLauncher()", self.task_delegate)
         self.assertIn("TaskManager.AbstractTasksModel.AppId", self.task_delegate)
         self.assertIn("TaskManager.AbstractTasksModel.LauncherUrlWithoutIcon", self.task_delegate)
+        self.assertIn(
+            "launcherUrlKey(delegateRoot.model.LauncherUrlWithoutIcon)\n"
+            "            || launcherUrlKey(delegateRoot.model.LauncherUrl)",
+            self.task_delegate,
+        )
         self.assertIn("TaskManager.AbstractTasksModel.LastActivated", self.task_delegate)
         self.assertIn("TaskManager.AbstractTasksModel.IsActive", self.task_delegate)
         self.assertIn("taskModel.makeModelIndex(row, childRow)", self.task_delegate)

@@ -308,7 +308,7 @@ class PackageContractTests(unittest.TestCase):
 
     def test_launcher_matching_uses_url_fallback_only_when_an_app_id_is_missing(self):
         start = self.task_delegate.find("function launcherMatchesTask(")
-        end = self.task_delegate.find("\\n    }", start)
+        end = self.task_delegate.find("\n    }", start)
         matcher = self.task_delegate[start:end]
         self.assertIn("if (launcherAppId && candidateAppId) {", matcher)
         id_check = matcher.find("return launcherAppId === candidateAppId;")

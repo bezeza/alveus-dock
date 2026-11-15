@@ -235,6 +235,11 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("signal dismissed()", self.group_chooser)
         self.assertIn("chooser.dismissed()", self.group_chooser)
         self.assertIn("function cancelPendingClose()", self.group_chooser)
+        cancel_start = self.group_chooser.find("function cancelPendingClose()")
+        cancel_end = self.group_chooser.find("\n    }", cancel_start)
+        cancel_handler = self.group_chooser[cancel_start:cancel_end]
+        self.assertIn("closeTimer.stop()", cancel_handler)
+        self.assertIn("requestActivate()", cancel_handler)
         self.assertIn("groupWindowChooser.cancelPendingClose()", self.qml)
 
         handler_start = self.qml.find("onDismissed:")

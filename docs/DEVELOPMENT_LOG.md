@@ -6,16 +6,21 @@ This file records dated engineering work. It is not a runtime error log and it i
 
 ### Fixed
 - Keep the grouped Window Chooser's parent source row independent from the Quick Access launcher row when the chooser is anchored to a pinned launcher.
-- Close a transient group chooser and resynchronize the presentation groups when TaskManager rows move.
-- Republish KWin delegate geometry when a task's source-model row changes, even if its visual bounds stay in the same place.
-- Matched pinned launchers using KDE TaskManager::appsMatch semantics: equal non-empty AppIds match first, then LauncherUrlWithoutIcon is compared directly as the fallback, even when both IDs differ.
-- Classify drag-and-drop separately: consume duplicate .desktop launcher drops, reject mixed launcher/file batches, and prevent launcher URLs from falling through to the file-open path.
+- Clear the stored delegate reference whenever the Window Chooser is dismissed by Escape, outside click or programmatic close; cancel pending close timers and reactivate the popup when switching to another group.
+- Close a transient group chooser and resynchronize presentation groups on TaskManager row moves, layout changes and model resets.
+- Refresh KWin delegate geometry after source-row changes, TaskManager layout changes and task-kind role changes, including startup-to-window transitions.
+- Match pinned launchers using KDE TaskManager::appsMatch semantics: equal non-empty AppIds match first, then LauncherUrlWithoutIcon is compared directly as fallback, including when both IDs differ.
+- Recognize .desktop, applications: and preferred:// launcher drops. Consume duplicate launcher drops, reject mixed launcher/file batches and prevent launcher URLs from falling through to file-open handling.
+- Disable Pin to Dock when LauncherUrlWithoutIcon is empty and label a grouped close action as "Close all windows".
+- Make the local install script upgrade an existing current-user package instead of attempting a second install.
 
 ### Validation
-- Added regression coverage for launcher-anchored group chooser indices, row-move handling, geometry refresh, AppId precedence and launcher-drop classification.
-- GitHub Actions run #66 on commit `cf22620e81a8569d56cc2a6e3da2d7303c23d440` passed structural checks, regression tests, Python/shell syntax checks, strict QML lint, Fedora RPM build, RPM verification and artifact upload.
+- Added regression coverage for launcher-anchored group chooser indices, popup dismissal and re-anchoring, row moves and layout changes, task-kind geometry refresh, KDE AppId/URL matching, preferred launcher drops, empty launcher URLs and grouped close labeling.
+- GitHub Actions run #98 on commit `8be0b6de409cd8034534b7eb3dd5e06c0cdeebc9` passed structural checks, regression tests, Python/shell syntax checks, KPackage install/upgrade/removal smoke tests, strict QML lint, Fedora RPM build, RPM verification and artifact upload.
+- The KPackage smoke test ran in an isolated temporary home directory. It verified first install, second-run upgrade, package listing and removal; it does not start Plasma or load the applet into a live desktop.
 - The `alveus-dock-rpm` artifact was uploaded. The package version remains 0.1.3; the 0.3.0 branch is not a release.
-- These checks do not replace live Plasma validation. Issue #5 remains open until the Single, Dual and Adaptive modes, drag/drop, grouping, Magic Lamp, panel geometry and performance are verified in a real Plasma session. Do not merge to `main` before that gate passes.
+- These checks do not replace live Plasma validation. Issue #5 remains open until Single, Dual and Adaptive modes, horizontal/vertical placement, grouping, drag/drop, Magic Lamp, panel geometry and performance are verified in a real Plasma session. Do not merge to `main` before that gate passes.
+
 
 ## 2026-11-15 — architecture and delivery plan
 

@@ -230,7 +230,7 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("groupWindowChooser.cancelPendingClose()", self.qml)
 
         handler_start = self.qml.find("onDismissed:")
-        handler_end = self.qml.find("\\n        }", handler_start)
+        handler_end = self.qml.find("\n        }", handler_start)
         self.assertGreaterEqual(handler_start, 0)
         handler = self.qml[handler_start:handler_end]
         self.assertIn("root.groupVisualParent = null", handler)

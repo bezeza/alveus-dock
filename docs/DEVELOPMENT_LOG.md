@@ -2,6 +2,21 @@
 
 This file records dated engineering work. It is not a runtime error log and it is not the future roadmap.
 
+## 2026-11-15 — 0.3.0 interaction and model-index hardening
+
+### Fixed
+- Keep the grouped Window Chooser's parent source row independent from the Quick Access launcher row when the chooser is anchored to a pinned launcher.
+- Close a transient group chooser and resynchronize the presentation groups when TaskManager rows move.
+- Republish KWin delegate geometry when a task's source-model row changes, even if its visual bounds stay in the same place.
+- Treat a non-empty conflicting AppId as a mismatch; use LauncherUrlWithoutIcon URL matching only when at least one AppId is missing.
+- Classify drag-and-drop separately: consume duplicate .desktop launcher drops, reject mixed launcher/file batches, and prevent launcher URLs from falling through to the file-open path.
+
+### Validation
+- Added regression coverage for launcher-anchored group chooser indices, row-move handling, geometry refresh, AppId precedence and launcher-drop classification.
+- GitHub Actions run #65 on commit `ff511a3d431e4b761b0e140028f465ce87437cbf` passed structural checks, regression tests, Python/shell syntax checks, strict QML lint, Fedora RPM build, RPM verification and artifact upload.
+- The `alveus-dock-rpm` artifact was uploaded. The package version remains 0.1.3; the 0.3.0 branch is not a release.
+- These checks do not replace live Plasma validation. Issue #5 remains open until the Single, Dual and Adaptive modes, drag/drop, grouping, Magic Lamp, panel geometry and performance are verified in a real Plasma session. Do not merge to `main` before that gate passes.
+
 ## 2026-11-15 — architecture and delivery plan
 
 ### Added

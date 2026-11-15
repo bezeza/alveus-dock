@@ -17,6 +17,8 @@ This file records dated engineering work. It is not a runtime error log and it i
 - Issue #9: content editor, search, presets and data portability.
 - Issue #10: security, accessibility and release hardening.
 - Issue #11: stable 1.0.0 Fedora release.
+- Issue #12: motion identity and icon reactions.
+- Issue #13: compatibility, layout polish and documentation.
 
 ### Validation
 - Documentation and planning changes only; no runtime feature or Plasma behavior is claimed by this entry.

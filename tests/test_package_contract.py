@@ -125,6 +125,24 @@ class PackageContractTests(unittest.TestCase):
         self.assertNotIn("loops: Animation.Infinite", self.all_qml)
         self.assertRegex(self.all_qml, r"loops:\s*2\b")
 
+    def test_launcher_drop_classification_prevents_file_drop_fallback(self):
+        start = self.qml.find("function addDroppedLaunchers(urls)")
+        end = self.qml.find("\\n    // Panel placement", start)
+        handler = self.qml[start:end]
+        self.assertIn("if (launcherCount === 0)", handler)
+        self.assertIn("if (launcherCount !== urls.length)", handler)
+        self.assertIn("return null;", handler)
+        self.assertIn("return true;", handler)
+        self.assertNotIn("return addedCount > 0;", handler)
+
+        drop_start = self.qml.find("const launcherDropResult = root.addDroppedLaunchers(drop.urls);")
+        drop_end = self.qml.find("// File drops target a live window", drop_start)
+        drop_handler = self.qml[drop_start:drop_end]
+        self.assertIn("launcherDropResult === true", drop_handler)
+        self.assertIn("launcherDropResult === null", drop_handler)
+        self.assertIn("drop.acceptProposedAction()", drop_handler)
+        self.assertIn("return;", drop_handler)
+
     def test_reorder_rejects_out_of_range_indices(self):
         self.assertIn("Number.isInteger(sourceIndex)", self.qml)
         self.assertIn("sourceIndex >= taskModel.count", self.qml)

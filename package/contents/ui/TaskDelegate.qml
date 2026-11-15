@@ -88,7 +88,7 @@ Item {
             return true;
         }
 
-        // Match KDE TaskManager::appsMatch: try the normalized launcher URL
+        // Match KDE TaskManager::appsMatch: compare LauncherUrlWithoutIcon
         // when AppIds do not match, including when both IDs are present.
         const candidateUrl = launcherUrlKey(delegateRoot.taskModel.data(
             index,

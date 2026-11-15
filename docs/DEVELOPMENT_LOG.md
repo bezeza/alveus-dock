@@ -2,6 +2,19 @@
 
 This file records dated engineering work. It is not a runtime error log and it is not the future roadmap.
 
+## 2026-11-15 — TaskManager update hot-path optimization
+
+### Optimized
+- Cached the four task-kind role IDs once per applet instance.
+- Restricted full Quick Access / Running Windows presentation-group synchronization to dataChanged notifications that can actually alter launcher/window/startup/group membership.
+- Unrelated active, minimized, attention and display-role updates no longer trigger a full task-model scan.
+
+### Validation
+- Added a regression test for the task-kind role gate.
+- Added an explicit Python unittest discovery step to the Fedora 44 CI workflow so the existing regression suite is executed rather than only checked structurally.
+- Live Plasma CPU/RSS comparison remains a separate runtime check.
+
+
 ## 2026-11-15 — 0.3.0 interaction and model-index hardening
 
 ### Fixed

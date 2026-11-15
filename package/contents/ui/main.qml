@@ -30,6 +30,15 @@ PlasmoidItem {
     readonly property int quickAccessItemExtent: quickAccessIconSize + 8
     readonly property int runningTasksItemExtent: runningTasksIconSize + 8
     readonly property bool splitLayoutEnabled: dockLayoutMode !== 0
+    // These are the only TaskManager roles that change membership in the two
+    // presentation layers. Cache the role IDs once instead of allocating arrays
+    // on every dataChanged notification.
+    readonly property var taskKindRoles: [
+        TaskManager.AbstractTasksModel.IsLauncher,
+        TaskManager.AbstractTasksModel.IsWindow,
+        TaskManager.AbstractTasksModel.IsGroupParent,
+        TaskManager.AbstractTasksModel.IsStartup
+    ]
     readonly property bool showRunningLayer: dockLayoutMode === 1
         || (dockLayoutMode === 2 && runningTasksVisualModel.count > 0)
     readonly property int quickAccessLength: quickAccessVisualModel.count * quickAccessItemExtent
@@ -410,21 +419,17 @@ PlasmoidItem {
         }
 
         function onDataChanged(topLeft, bottomRight, roles) {
-            root.scheduleTaskVisualGroups();
-
-            // Startup tasks can become real windows without changing the row
-            // count. Refresh KWin geometry when task-kind roles are updated.
-            const geometryRoles = [
-                TaskManager.AbstractTasksModel.IsWindow,
-                TaskManager.AbstractTasksModel.IsGroupParent,
-                TaskManager.AbstractTasksModel.IsStartup,
-                TaskManager.AbstractTasksModel.IsLauncher
-            ];
-            let geometryChanged = !roles || roles.length === 0;
-            for (let i = 0; !geometryChanged && i < geometryRoles.length; ++i) {
-                geometryChanged = roles.indexOf(geometryRoles[i]) !== -1;
+            // TaskManager also reports active, minimized, attention and display
+            // changes. They do not change layer membership, so avoid scanning
+            // the complete task model for those frequent notifications.
+            let taskKindChanged = !roles || roles.length === 0;
+            for (let i = 0; !taskKindChanged && i < root.taskKindRoles.length; ++i) {
+                taskKindChanged = roles.indexOf(root.taskKindRoles[i]) !== -1;
             }
-            if (geometryChanged) {
+            if (taskKindChanged) {
+                root.scheduleTaskVisualGroups();
+                // Startup tasks can become real windows without changing the
+                // row count, so task-kind changes also refresh KWin geometry.
                 iconGeometryTimer.restart();
             }
 

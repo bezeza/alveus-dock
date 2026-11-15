@@ -252,6 +252,22 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("root.closeGroupChooser()", handler)
         self.assertIn("iconGeometryTimer.restart()", handler)
 
+    def test_visual_group_resync_is_limited_to_task_kind_roles(self):
+        for role in ["IsLauncher", "IsWindow", "IsGroupParent", "IsStartup"]:
+            self.assertIn(f"TaskManager.AbstractTasksModel.{role}", self.qml)
+        self.assertIn("readonly property var taskKindRoles", self.qml)
+
+        handler_start = self.qml.find("function onDataChanged(topLeft, bottomRight, roles)")
+        handler_end = self.qml.find("\\n        }", handler_start)
+        self.assertGreaterEqual(handler_start, 0)
+        handler = self.qml[handler_start:handler_end]
+        gate = handler.find("if (taskKindChanged)")
+        sync = handler.find("root.scheduleTaskVisualGroups()")
+        self.assertGreaterEqual(gate, 0)
+        self.assertGreater(sync, gate)
+        self.assertIn("roles.indexOf(root.taskKindRoles[i])", handler)
+        self.assertNotIn("const geometryRoles = [", handler)
+
     def test_task_kind_role_changes_refresh_kde_icon_geometry(self):
         handler_start = self.qml.find("function onDataChanged(topLeft, bottomRight, roles)")
         handler_end = self.qml.find("\n        }", handler_start)

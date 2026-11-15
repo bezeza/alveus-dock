@@ -125,6 +125,14 @@ class PackageContractTests(unittest.TestCase):
         self.assertNotIn("loops: Animation.Infinite", self.all_qml)
         self.assertRegex(self.all_qml, r"loops:\s*2\b")
 
+    def test_preferred_kde_launchers_are_recognized_as_external_launcher_drops(self):
+        start = self.qml.find("function isApplicationLauncher(url)")
+        end = self.qml.find("\n    }", start)
+        classifier = self.qml[start:end]
+        self.assertIn('value.startsWith("applications:")', classifier)
+        self.assertIn('value.startsWith("preferred://")', classifier)
+        self.assertIn('value.endsWith(".desktop")', classifier)
+
     def test_launcher_drop_classification_prevents_file_drop_fallback(self):
         start = self.qml.find("function addDroppedLaunchers(urls)")
         end = self.qml.find("\n    // Panel placement", start)

@@ -187,17 +187,17 @@ class PackageContractTests(unittest.TestCase):
 
     def test_launcher_anchored_group_chooser_keeps_the_group_source_index(self):
         handler_start = self.task_delegate.find("onSourceIndexChanged:")
-        handler_end = self.task_delegate.find("\\n    }", handler_start)
+        handler_end = self.task_delegate.find("\n    }", handler_start)
         handler = self.task_delegate[handler_start:handler_end]
         self.assertRegex(
             handler,
-            r"groupVisualParent\\s*===\\s*delegateRoot\\s*&&\\s*!!delegateRoot\\.model\\.IsGroupParent",
+            r"groupVisualParent\s*===\s*delegateRoot\s*&&\s*!!delegateRoot\.model\.IsGroupParent",
         )
         self.assertIn("groupParentIndex = sourceIndex", handler)
 
     def test_task_row_moves_resync_visual_groups_and_close_the_chooser(self):
         handler_start = self.qml.find("function onRowsMoved()")
-        handler_end = self.qml.find("\\n        }", handler_start)
+        handler_end = self.qml.find("\n        }", handler_start)
         self.assertGreaterEqual(handler_start, 0)
         handler = self.qml[handler_start:handler_end]
         self.assertIn("root.scheduleTaskVisualGroups()", handler)

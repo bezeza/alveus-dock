@@ -409,8 +409,25 @@ PlasmoidItem {
             iconGeometryTimer.restart();
         }
 
-        function onDataChanged() {
+        function onDataChanged(topLeft, bottomRight, roles) {
             root.scheduleTaskVisualGroups();
+
+            // Startup tasks can become real windows without changing the row
+            // count. Refresh KWin geometry when task-kind roles are updated.
+            const geometryRoles = [
+                TaskManager.AbstractTasksModel.IsWindow,
+                TaskManager.AbstractTasksModel.IsGroupParent,
+                TaskManager.AbstractTasksModel.IsStartup,
+                TaskManager.AbstractTasksModel.IsLauncher
+            ];
+            let geometryChanged = !roles || roles.length === 0;
+            for (let i = 0; !geometryChanged && i < geometryRoles.length; ++i) {
+                geometryChanged = roles.indexOf(geometryRoles[i]) !== -1;
+            }
+            if (geometryChanged) {
+                iconGeometryTimer.restart();
+            }
+
             if (root.groupVisualParent !== null) {
                 const groupIndex = taskModel.makeModelIndex(root.groupParentIndex);
                 const isGroup = !!taskModel.data(

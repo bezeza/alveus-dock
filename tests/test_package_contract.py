@@ -231,6 +231,16 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("root.groupVisualParent !== null", handler)
         self.assertIn("root.closeGroupChooser()", handler)
 
+    def test_task_model_layout_changes_resync_views_and_close_the_chooser(self):
+        handler_start = self.qml.find("function onLayoutChanged()")
+        handler_end = self.qml.find("\n        }", handler_start)
+        self.assertGreaterEqual(handler_start, 0)
+        handler = self.qml[handler_start:handler_end]
+        self.assertIn("root.scheduleTaskVisualGroups()", handler)
+        self.assertIn("root.groupVisualParent !== null", handler)
+        self.assertIn("root.closeGroupChooser()", handler)
+        self.assertIn("iconGeometryTimer.restart()", handler)
+
     def test_window_chooser_dismissal_releases_delegate_reference(self):
         self.assertIn("signal dismissed()", self.group_chooser)
         self.assertIn("chooser.dismissed()", self.group_chooser)

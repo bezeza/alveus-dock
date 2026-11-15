@@ -308,6 +308,19 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn('"launcher-click-while-starting"', self.task_delegate)
         self.assertIn('return { kind: "starting" };', self.task_delegate)
 
+    def test_quick_access_opens_window_chooser_for_grouped_application(self):
+        self.assertIn('return { kind: "group", parentRow: row };', self.task_delegate)
+        self.assertIn('existingTask.kind === "group"', self.task_delegate)
+        self.assertIn("toggleGroupChooser(delegateRoot, existingTask.parentRow)", self.task_delegate)
+        self.assertIn(
+            "function toggleGroupChooser(delegateItem, parentSourceIndex)",
+            self.qml,
+        )
+        self.assertIn("groupParentIndex === resolvedParentIndex", self.qml)
+        self.assertIn("parentIndex: root.groupParentIndex", self.qml)
+        self.assertIn("TaskManager.AbstractTasksModel.ChildCount", self.qml)
+        self.assertIn("root.closeGroupChooser();", self.qml)
+
     def test_running_layer_is_not_manually_reordered(self):
         self.assertIn("allowReorder: false", self.qml)
         self.assertIn(

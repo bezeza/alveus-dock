@@ -14,7 +14,8 @@ This file records dated engineering work. It is not a runtime error log and it i
 
 ### Validation
 - Added regression coverage for AppId/launcher URL matching, LastActivated selection, grouped child indices and startup duplicate suppression.
-- CI validation is pending for this change.
+- GitHub Actions run #40 on code/test commit `6c45003e1627044ec7c051ea536c7998561d9339` passed structural checks, all 28 regression tests, Python/shell syntax checks, strict QML lint with zero warnings, Fedora 44 RPM build, RPM metadata/file/dependency verification and artifact upload: https://github.com/bezeza/alveus-dock/actions/runs/43696828389.
+- Run #42 is validating the subsequent documentation and AI-agent-rule updates on head `3d4277e862e78c3eb9e70eebbca91c0382ede34e`.
 - Live Plasma testing is still required to confirm AppId/launcher URL matching and activation behavior on the target Plasma 6.8 session.
 - Matching intentionally follows the same current-desktop/current-screen filters as the dock's running-window layer.
 

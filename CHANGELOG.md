@@ -7,7 +7,7 @@ All notable user-visible changes to Alveus Dock are recorded here. This file rec
 ### Added
 - Configurable Single, Dual and Adaptive layouts.
 - Separate Quick Access and Running Windows layers using KDE's native TaskManager model.
-- Quick Access activates the most recently active matching window visible to the dock's current TaskManager filters instead of launching a duplicate; in-progress startup tasks also suppress duplicate launch requests.
+- Quick Access opens the Window Chooser for grouped applications, otherwise activates the most recently active matching window visible to the dock's current TaskManager filters; in-progress startup tasks suppress duplicate launches.
 - Horizontal two-row and vertical two-column arrangements.
 - Independent icon sizes and spacing for Quick Access and Running Windows, plus configurable spacing between layers.
 - Adaptive hides the running layer when no windows are open.

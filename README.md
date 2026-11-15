@@ -19,7 +19,7 @@ See the [architecture](docs/ARCHITECTURE.md), [test plan](docs/TEST_PLAN.md) and
 - Middle-click requests a new application instance.
 - Right-click offers pin/unpin, new instance and close actions.
 - Drag icons to reorder tasks.
-- Drop .desktop files or applications: URLs on the dock to pin launchers.
+- Drop .desktop files, applications: URLs or preferred:// URLs on the dock to pin launchers.
 - Drop files onto a running application icon to open them with that application.
 - Optional filtering to the current virtual desktop and current screen.
 - Publishes running-window and grouped-task icon geometry to KDE TaskManager so KWin can target the Alveus icon for minimize effects such as Magic Lamp.
@@ -30,7 +30,7 @@ See the [architecture](docs/ARCHITECTURE.md), [test plan](docs/TEST_PLAN.md) and
 - Dual layout separates pinned Quick Access launchers from Running Windows.
 - Clicking a Quick Access launcher opens the Window Chooser when matching windows are grouped; otherwise it activates the most recently active matching window in the dock's current TaskManager filter scope. It launches only when no matching window or startup task exists.
 - Horizontal panels use two rows; vertical panels use two columns.
-- Adaptive layout hides the running-window layer when no windows are open.
+- Adaptive layout hides the running-window layer when no running or startup tasks are present.
 - Running-window delegates preserve KDE's minimize-to-icon geometry for effects such as Magic Lamp.
 - Window-count badge on grouped application icons and an ungroup action in the context menu.
 

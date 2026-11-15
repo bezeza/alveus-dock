@@ -11,7 +11,7 @@ Alveus Dock is a lightweight KDE Plasma 6 applet written in QML. The current tar
 - Preserve the source TaskManager row index when using filtered DelegateModel views; never pass a filtered view index to TasksModel actions.
 - Keep launcher reordering in Quick Access only when layers are split; do not reorder the Running Windows layer.
 - In split layouts, a Quick Access click must first resolve a matching running task by KDE AppId, with LauncherUrlWithoutIcon as a fallback, and activate the active or most recently activated matching window instead of launching another instance.
-- Resolve grouped applications to a real child-window index with makeModelIndex(parentRow, childRow); do not attempt to activate a group parent as if it were a window.
+- When a Quick Access launcher matches a grouped application, open the Window Chooser anchored to that launcher and pass the group's top-level source row as the chooser parent; use makeModelIndex(parentRow, childRow) for child-window actions.
 - A Quick Access click must never minimize an already-running window. Only clicking the active delegate in Running Windows toggles minimization.
 - If a matching startup task already exists, do not dispatch another launch request.
 - Quick Access matching uses the same TaskManager filters as the visible Running Windows layer; document this scope and validate it in live Plasma.

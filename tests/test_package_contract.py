@@ -258,7 +258,7 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("readonly property var taskKindRoles", self.qml)
 
         handler_start = self.qml.find("function onDataChanged(topLeft, bottomRight, roles)")
-        handler_end = self.qml.find("\\n        }", handler_start)
+        handler_end = self.qml.find("\n        }", handler_start)
         self.assertGreaterEqual(handler_start, 0)
         handler = self.qml[handler_start:handler_end]
         gate = handler.find("if (taskKindChanged)")

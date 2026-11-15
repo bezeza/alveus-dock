@@ -606,7 +606,8 @@ Item {
         Controls.MenuSeparator {}
 
         Controls.MenuItem {
-            text: qsTr("Close")
+            text: delegateRoot.model.IsGroupParent
+                ? qsTr("Close all windows") : qsTr("Close")
             visible: delegateRoot.model.IsWindow
             onTriggered: delegateRoot.dockRoot.runAction(
                 "close-window",

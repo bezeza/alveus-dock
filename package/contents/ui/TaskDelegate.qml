@@ -90,8 +90,10 @@ Item {
             index,
             TaskManager.AbstractTasksModel.AppId
         ) || "");
-        if (launcherAppId && candidateAppId && launcherAppId === candidateAppId) {
-            return true;
+        if (launcherAppId && candidateAppId) {
+            // A known but different service ID is a mismatch, not a reason to
+            // fall back to a URL comparison. URL matching is only for missing IDs.
+            return launcherAppId === candidateAppId;
         }
 
         const candidateUrl = normalizedLauncherUrl(delegateRoot.taskModel.data(

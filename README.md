@@ -129,6 +129,8 @@ Install the applet for the current user:
 bash scripts/install-local.sh
 ~~~
 
+The script installs the applet or upgrades an existing current-user installation. After an upgrade, remove and re-add existing panel instances to load the new QML.
+
 Remove the development install:
 
 ~~~bash

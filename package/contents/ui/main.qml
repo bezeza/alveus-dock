@@ -88,6 +88,9 @@ PlasmoidItem {
         groupVisualParent = delegateItem;
         groupParentIndex = resolvedParentIndex;
         groupTitle = String(delegateItem.model.display || "");
+        // Re-anchoring an already visible chooser must cancel an outside-click
+        // close timer started for its previous parent.
+        groupWindowChooser.cancelPendingClose();
         groupWindowChooser.visible = true;
     }
 

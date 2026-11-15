@@ -233,17 +233,24 @@ PlasmoidItem {
             return false;
         }
 
-        let allApplications = true;
+        let launcherCount = 0;
         for (let i = 0; i < urls.length; ++i) {
-            if (!isApplicationLauncher(urls[i])) {
-                allApplications = false;
-                break;
+            if (isApplicationLauncher(urls[i])) {
+                ++launcherCount;
             }
         }
 
-        if (!allApplications) {
+        if (launcherCount === 0) {
             logInfo("drop-not-launchers", { itemCount: urls.length });
             return false;
+        }
+
+        if (launcherCount !== urls.length) {
+            logWarning("launcher-drop-mixed-content", {
+                itemCount: urls.length,
+                launcherCount: launcherCount
+            });
+            return null;
         }
 
         let addedCount = 0;
@@ -259,7 +266,9 @@ PlasmoidItem {
             itemCount: urls.length,
             addedCount: addedCount
         });
-        return addedCount > 0;
+        // A duplicate .desktop URL is still a launcher drop. Consume it rather
+        // than letting the same URL fall through to the file-open handler.
+        return true;
     }
 
     // Panel placement can settle a little after Plasma reports a location or
@@ -631,8 +640,14 @@ PlasmoidItem {
             }
 
             // External application launcher: pin it anywhere on the dock.
-            if (root.addDroppedLaunchers(drop.urls)) {
+            const launcherDropResult = root.addDroppedLaunchers(drop.urls);
+            if (launcherDropResult === true) {
                 drop.acceptProposedAction();
+                return;
+            }
+            if (launcherDropResult === null) {
+                // Mixed .desktop and file drops are ambiguous; do not open
+                // launcher files in the target application as ordinary files.
                 return;
             }
 

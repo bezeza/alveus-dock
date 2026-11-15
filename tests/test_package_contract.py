@@ -287,6 +287,26 @@ class PackageContractTests(unittest.TestCase):
         )
         self.assertIn("Layout.preferredHeight: vertical ? panelLength : panelThickness", self.qml)
 
+    def test_quick_access_activates_existing_application_instead_of_relaunching(self):
+        self.assertIn("function findRunningTaskForLauncher()", self.task_delegate)
+        self.assertIn("TaskManager.AbstractTasksModel.AppId", self.task_delegate)
+        self.assertIn("TaskManager.AbstractTasksModel.LauncherUrlWithoutIcon", self.task_delegate)
+        self.assertIn("TaskManager.AbstractTasksModel.LastActivated", self.task_delegate)
+        self.assertIn("TaskManager.AbstractTasksModel.IsActive", self.task_delegate)
+        self.assertIn("taskModel.makeModelIndex(row, childRow)", self.task_delegate)
+        self.assertIn('"activate-existing-application"', self.task_delegate)
+        self.assertIn('"launch-application"', self.task_delegate)
+        self.assertIn("delegateRoot.playLaunchReaction();", self.task_delegate)
+        self.assertNotIn(
+            "delegateRoot.playLaunchReaction();\\n                delegateRoot.activateTask();",
+            self.task_delegate,
+        )
+
+    def test_quick_access_does_not_duplicate_an_application_starting(self):
+        self.assertIn("TaskManager.AbstractTasksModel.IsStartup", self.task_delegate)
+        self.assertIn('"launcher-click-while-starting"', self.task_delegate)
+        self.assertIn('return { kind: "starting" };', self.task_delegate)
+
     def test_running_layer_is_not_manually_reordered(self):
         self.assertIn("allowReorder: false", self.qml)
         self.assertIn(

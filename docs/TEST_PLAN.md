@@ -59,7 +59,7 @@ Record unsupported combinations explicitly rather than assuming compatibility.
 - Group two or more windows; activate and close each child; ungroup; close the last child.
 - Test Window Chooser focus, Escape, outside click, parent recycling and group collapse.
 - Verify source-model indices are used for all task actions.
-- Verify only the active item in Running Windows requests minimization.
+- In Dual/Adaptive modes, verify only the active delegate in Running Windows requests minimization and Quick Access never minimizes an already-running app. Verify Single mode retains its existing one-row task behavior.
 - Verify Magic Lamp targets the correct running-window or group icon after resize, reorder, panel relocation and screen changes.
 - Verify file drops onto running application windows and .desktop launcher drops.
 - Verify current-desktop/current-screen filter behavior.

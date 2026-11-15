@@ -70,6 +70,23 @@ Build a small, responsive KDE Plasma dock that feels more expressive than Icons-
 
 **Exit criteria:** the published compatibility matrix matches real test results and no known critical defects remain.
 
+## 0.6.0 — multiple dock instances and bookmark panels
+
+- [ ] Verify how Plasma handles multiple instances of the Alveus Dock applet in the same or different containments, including per-instance configuration and persistence; confirm the supported behavior before implementation.
+- [ ] Support multiple independent Alveus Dock instances on one desktop, placed on different panel edges through native Plasma containment placement.
+- [ ] Give each instance its own content profile: **Applications** (Quick Access + Running Windows), **Bookmarks** (web links, files and folders), or **Hybrid** (both).
+- [ ] Keep the KDE TasksModel dedicated to application launchers and running windows; implement bookmark items in a separate model so URLs and files never enter task/window handling.
+- [ ] Isolate each instance's content list and settings: profile, items, order, grouping, icon size, labels, spacing, background/transparency and relevant task filters.
+- [ ] Add bookmark entries for web URLs, local files and directories, opening each through the user's default application or handler.
+- [ ] Support bookmark groups/folders, separators, rename, remove, custom icons and drag-to-reorder.
+- [ ] Support drag-and-drop to add URLs, files and folders to a Bookmarks Dock, while preserving the existing .desktop/application pinning flow for Applications Dock.
+- [ ] Allow labels to be shown or hidden and provide configurable overflow/scrolling for long vertical and horizontal bookmark lists.
+- [ ] Verify that creating, moving, configuring or removing one dock instance does not change another instance's content or settings.
+- [ ] Test persistence after Plasma restart, panel relocation, multiple monitors and fractional scaling; verify Magic Lamp still targets only running-window delegates.
+- [ ] Compare CPU/RSS with one and multiple instances and ensure no polling loop or unnecessary background service is introduced.
+
+**Exit criteria:** a user can run an Applications Dock at the bottom and a separate Bookmarks Dock on a side edge, each with independent content and settings; both survive Plasma restart and behave correctly without regressions to task grouping, window activation or Magic Lamp geometry.
+
 ## 1.0.0 — stable Fedora release
 
 - [ ] Tag a stable release.

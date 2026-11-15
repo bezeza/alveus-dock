@@ -13,7 +13,7 @@ This file records dated engineering work. It is not a runtime error log and it i
 
 ### Validation
 - Added regression coverage for launcher-anchored group chooser indices, row-move handling, geometry refresh, AppId precedence and launcher-drop classification.
-- GitHub Actions run #65 on commit `ff511a3d431e4b761b0e140028f465ce87437cbf` passed structural checks, regression tests, Python/shell syntax checks, strict QML lint, Fedora RPM build, RPM verification and artifact upload.
+- GitHub Actions run #66 on commit `cf22620e81a8569d56cc2a6e3da2d7303c23d440` passed structural checks, regression tests, Python/shell syntax checks, strict QML lint, Fedora RPM build, RPM verification and artifact upload.
 - The `alveus-dock-rpm` artifact was uploaded. The package version remains 0.1.3; the 0.3.0 branch is not a release.
 - These checks do not replace live Plasma validation. Issue #5 remains open until the Single, Dual and Adaptive modes, drag/drop, grouping, Magic Lamp, panel geometry and performance are verified in a real Plasma session. Do not merge to `main` before that gate passes.
 

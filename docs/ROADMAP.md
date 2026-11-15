@@ -48,6 +48,8 @@ Build a small, responsive KDE Plasma dock that feels more expressive than Icons-
 
 ## 0.4.0 — Alveus motion identity
 
+Tracking: [GitHub Issue #12](https://github.com/bezeza/alveus-dock/issues/12).
+
 - [ ] Add a liquid-style active-window indicator.
 - [ ] Evaluate magnetic spacing between nearby icons.
 - [ ] Add a short domino/wave reaction on application launch.
@@ -58,6 +60,8 @@ Build a small, responsive KDE Plasma dock that feels more expressive than Icons-
 **Exit criteria:** all effects are finite, interruptible, respect reduced-motion settings and do not cause visible lag during normal desktop use.
 
 ## 0.5.0 — polish and compatibility
+
+Tracking: [GitHub Issue #13](https://github.com/bezeza/alveus-dock/issues/13).
 
 - [ ] Finish horizontal and vertical layout behavior.
 - [ ] Test Wayland and X11 separately where supported.

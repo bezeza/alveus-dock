@@ -8,6 +8,7 @@ import QtQuick
 import QtQuick.Controls as Controls
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
+import org.kde.taskmanager as TaskManager
 
 Item {
     id: delegateRoot
@@ -72,6 +73,149 @@ Item {
         return delegateRoot.taskModel.makeModelIndex(sourceIndex);
     }
 
+    // Match a pinned launcher to its running task using KDE's native task roles.
+    // KDE compares launcher URLs without the query metadata, so use the same
+    // normalization as a fallback when an application service ID is missing.
+    function normalizedLauncherUrl(value) {
+        const url = String(value || "");
+        if (!url) {
+            return "";
+        }
+        const queryIndex = url.indexOf("?");
+        return queryIndex >= 0 ? url.slice(0, queryIndex) : url;
+    }
+
+    function launcherMatchesTask(index, launcherAppId, launcherUrl) {
+        const candidateAppId = String(delegateRoot.taskModel.data(
+            index,
+            TaskManager.AbstractTasksModel.AppId
+        ) || "");
+        if (launcherAppId && candidateAppId && launcherAppId === candidateAppId) {
+            return true;
+        }
+
+        const candidateUrl = normalizedLauncherUrl(delegateRoot.taskModel.data(
+            index,
+            TaskManager.AbstractTasksModel.LauncherUrlWithoutIcon
+        ));
+        return launcherUrl !== "" && candidateUrl !== "" && launcherUrl === candidateUrl;
+    }
+
+    function lastActivatedTimestamp(index) {
+        const value = delegateRoot.taskModel.data(
+            index,
+            TaskManager.AbstractTasksModel.LastActivated
+        );
+        if (value && typeof value.getTime === "function") {
+            return value.getTime();
+        }
+        const numericValue = Number(value);
+        if (Number.isFinite(numericValue)) {
+            return numericValue;
+        }
+        const parsedValue = Date.parse(String(value || ""));
+        return Number.isFinite(parsedValue) ? parsedValue : 0;
+    }
+
+    function isMoreRecentlyActivated(candidateIndex, currentBestIndex) {
+        if (!currentBestIndex) {
+            return true;
+        }
+
+        const candidateIsActive = !!delegateRoot.taskModel.data(
+            candidateIndex,
+            TaskManager.AbstractTasksModel.IsActive
+        );
+        const currentBestIsActive = !!delegateRoot.taskModel.data(
+            currentBestIndex,
+            TaskManager.AbstractTasksModel.IsActive
+        );
+        if (candidateIsActive !== currentBestIsActive) {
+            return candidateIsActive;
+        }
+        return lastActivatedTimestamp(candidateIndex) > lastActivatedTimestamp(currentBestIndex);
+    }
+
+    function findRunningTaskForLauncher() {
+        const launcherAppId = String(delegateRoot.model.AppId || "");
+        const launcherUrl = normalizedLauncherUrl(
+            delegateRoot.model.LauncherUrlWithoutIcon || delegateRoot.model.LauncherUrl
+        );
+        if (!launcherAppId && !launcherUrl) {
+            return null;
+        }
+
+        let bestWindowIndex = null;
+        let matchingStartupFound = false;
+
+        // Search the same native TasksModel used by both dock layers. This
+        // keeps matching consistent with the configured desktop/screen filters.
+        for (let row = 0; row < delegateRoot.taskModel.count; ++row) {
+            const candidateIndex = delegateRoot.taskModel.makeModelIndex(row);
+            if (delegateRoot.taskModel.data(
+                    candidateIndex,
+                    TaskManager.AbstractTasksModel.IsLauncher
+                )) {
+                continue;
+            }
+
+            const isGroupParent = !!delegateRoot.taskModel.data(
+                candidateIndex,
+                TaskManager.AbstractTasksModel.IsGroupParent
+            );
+            if (isGroupParent) {
+                const parentMatches = launcherMatchesTask(
+                    candidateIndex,
+                    launcherAppId,
+                    launcherUrl
+                );
+                const childCount = delegateRoot.taskModel.rowCount(candidateIndex);
+                for (let childRow = 0; childRow < childCount; ++childRow) {
+                    const childIndex = delegateRoot.taskModel.makeModelIndex(row, childRow);
+                    const isWindow = !!delegateRoot.taskModel.data(
+                        childIndex,
+                        TaskManager.AbstractTasksModel.IsWindow
+                    );
+                    if (!isWindow || (!parentMatches
+                            && !launcherMatchesTask(childIndex, launcherAppId, launcherUrl))) {
+                        continue;
+                    }
+                    if (isMoreRecentlyActivated(childIndex, bestWindowIndex)) {
+                        bestWindowIndex = childIndex;
+                    }
+                }
+                continue;
+            }
+
+            const isWindow = !!delegateRoot.taskModel.data(
+                candidateIndex,
+                TaskManager.AbstractTasksModel.IsWindow
+            );
+            if (isWindow && launcherMatchesTask(candidateIndex, launcherAppId, launcherUrl)) {
+                if (isMoreRecentlyActivated(candidateIndex, bestWindowIndex)) {
+                    bestWindowIndex = candidateIndex;
+                }
+                continue;
+            }
+
+            const isStartup = !!delegateRoot.taskModel.data(
+                candidateIndex,
+                TaskManager.AbstractTasksModel.IsStartup
+            );
+            if (isStartup && launcherMatchesTask(candidateIndex, launcherAppId, launcherUrl)) {
+                matchingStartupFound = true;
+            }
+        }
+
+        if (bestWindowIndex) {
+            return { kind: "window", index: bestWindowIndex };
+        }
+        if (matchingStartupFound) {
+            return { kind: "starting" };
+        }
+        return null;
+    }
+
     function publishIconGeometry() {
         if (!delegateRoot.visible
                 || !delegateRoot.model
@@ -115,6 +259,28 @@ Item {
             delegateRoot.dockRoot.toggleGroupChooser(delegateRoot);
             if (delegateRoot.dockRoot.groupVisualParent === delegateRoot) {
                 delegateRoot.dockRoot.logInfo("window-chooser-opened", { childCount: childCount });
+            }
+            return;
+        }
+
+        if (model.IsLauncher) {
+            const existingTask = findRunningTaskForLauncher();
+            if (existingTask && existingTask.kind === "window") {
+                // Quick Access raises the most recently active window; it never
+                // minimizes an application just because its launcher was clicked.
+                delegateRoot.dockRoot.runAction(
+                    "activate-existing-application",
+                    () => delegateRoot.taskModel.requestActivate(existingTask.index)
+                );
+            } else if (existingTask && existingTask.kind === "starting") {
+                // A startup task already exists. Do not dispatch a duplicate launch.
+                delegateRoot.dockRoot.logInfo("launcher-click-while-starting", {});
+            } else {
+                delegateRoot.playLaunchReaction();
+                delegateRoot.dockRoot.runAction(
+                    "launch-application",
+                    () => delegateRoot.taskModel.requestActivate(idx)
+                );
             }
             return;
         }
@@ -367,7 +533,6 @@ Item {
 
         onClicked: mouse => {
             if (mouse.button === Qt.LeftButton) {
-                delegateRoot.playLaunchReaction();
                 delegateRoot.activateTask();
             } else if (mouse.button === Qt.MiddleButton) {
                 delegateRoot.dockRoot.runAction("new-instance",

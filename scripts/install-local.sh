@@ -9,7 +9,7 @@ command -v kpackagetool6 >/dev/null 2>&1 || {
 installed_packages="$(kpackagetool6 --type Plasma/Applet --list)"
 if grep -Fq "org.bezeza.alveusdock" <<<"$installed_packages"; then
     kpackagetool6 --type Plasma/Applet --upgrade "$ROOT/package"
-    echo "Alveus Dock upgraded for the current user. Reload the applet from KDE's Add Widgets menu if it is already running."
+    echo "Alveus Dock upgraded for the current user. Remove and re-add existing panel instances to load the new QML."
 else
     kpackagetool6 --type Plasma/Applet --install "$ROOT/package"
     echo "Alveus Dock installed for the current user. Add it from KDE's Add Widgets menu."

@@ -437,6 +437,14 @@ PlasmoidItem {
                 () => taskModel.requestClose(childIndex)
             );
         }
+
+        onDismissed: {
+            // Escape and outside-click close the popup directly. Release the
+            // delegate reference as well, not just the native popup window.
+            root.groupVisualParent = null;
+            root.groupParentIndex = -1;
+            root.groupTitle = "";
+        }
     }
 
     Component.onCompleted: {

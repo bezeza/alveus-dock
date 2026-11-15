@@ -223,6 +223,20 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("root.groupVisualParent !== null", handler)
         self.assertIn("root.closeGroupChooser()", handler)
 
+    def test_window_chooser_dismissal_releases_delegate_reference(self):
+        self.assertIn("signal dismissed()", self.group_chooser)
+        self.assertIn("chooser.dismissed()", self.group_chooser)
+        self.assertIn("function cancelPendingClose()", self.group_chooser)
+        self.assertIn("groupWindowChooser.cancelPendingClose()", self.qml)
+
+        handler_start = self.qml.find("onDismissed:")
+        handler_end = self.qml.find("\\n        }", handler_start)
+        self.assertGreaterEqual(handler_start, 0)
+        handler = self.qml[handler_start:handler_end]
+        self.assertIn("root.groupVisualParent = null", handler)
+        self.assertIn("root.groupParentIndex = -1", handler)
+        self.assertIn('root.groupTitle = ""', handler)
+
     def test_group_chooser_supports_keyboard_navigation(self):
         self.assertIn("Keys.onEscapePressed", self.group_chooser)
         self.assertIn("Keys.onReturnPressed", self.group_chooser)

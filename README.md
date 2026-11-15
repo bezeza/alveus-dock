@@ -9,6 +9,8 @@ It is an independent applet, not a patch or replacement for KDE's Icons-Only Tas
 
 > **Project status:** 0.3.0 dual-layer layout development branch, based on the 0.2.0 window-grouping work. Runtime testing in a live Plasma session is still required. CI checks do not replace testing in a running desktop session.
 
+See the [architecture](docs/ARCHITECTURE.md), [test plan](docs/TEST_PLAN.md) and [roadmap](docs/ROADMAP.md) for design boundaries, validation requirements and planned milestones.
+
 ## Features
 
 ### Launchers and windows

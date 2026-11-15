@@ -87,6 +87,23 @@ Build a small, responsive KDE Plasma dock that feels more expressive than Icons-
 
 **Exit criteria:** a user can run an Applications Dock at the bottom and a separate Bookmarks Dock on a side edge, each with independent content and settings; both survive Plasma restart and behave correctly without regressions to task grouping, window activation or Magic Lamp geometry.
 
+## 0.7.0 — customizable bookmark folder expansion
+
+- [ ] Build a reusable folder-popup controller anchored to the source bookmark icon.
+- [ ] Implement Grid as the default folder view, with per-folder style persistence.
+- [ ] Implement List and Category tree as the first practical alternatives.
+- [ ] Add edge-aware popup placement for bottom, top, left and right docks; keep the full popup within the active screen work area.
+- [ ] Add mouse, touchpad and keyboard navigation, including Enter/Space, Escape, outside-click close and predictable focus restoration.
+- [ ] Add per-folder controls for icon size, columns, labels, spacing, animation speed, opening direction and opacity.
+- [ ] Add reduced-motion support and make animations optional, short and interruptible.
+- [ ] Test realistic folders with 5, 12 and 30+ items; use scrolling or pagination instead of shrinking icons indefinitely.
+- [ ] Add Radial/Fan, Carousel and Large Tiles as follow-up styles after the base interaction passes live KDE usability tests.
+- [ ] Keep Ring, Widget Panel and Combined View experimental until testing proves they improve findability without clutter.
+- [ ] Verify that two folders can use different styles and settings simultaneously and that each persists after Plasma restart.
+- [ ] Test nested folders, all four dock edges, multiple monitors and fractional scaling.
+
+**Exit criteria:** each folder can independently open in its configured style; popups remain on-screen, are usable with pointer and keyboard, respect reduced motion and preserve their configuration across Plasma restarts.
+
 ## 1.0.0 — stable Fedora release
 
 - [ ] Tag a stable release.

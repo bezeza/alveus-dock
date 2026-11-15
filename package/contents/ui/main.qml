@@ -73,14 +73,20 @@ PlasmoidItem {
         groupTitle = "";
     }
 
-    function toggleGroupChooser(delegateItem) {
-        if (groupWindowChooser.visible && groupVisualParent === delegateItem) {
+    function toggleGroupChooser(delegateItem, parentSourceIndex) {
+        const resolvedParentIndex = parentSourceIndex === undefined
+            ? delegateItem.sourceIndex
+            : Number(parentSourceIndex);
+
+        if (groupWindowChooser.visible
+                && groupVisualParent === delegateItem
+                && groupParentIndex === resolvedParentIndex) {
             closeGroupChooser();
             return;
         }
 
         groupVisualParent = delegateItem;
-        groupParentIndex = delegateItem.sourceIndex;
+        groupParentIndex = resolvedParentIndex;
         groupTitle = String(delegateItem.model.display || "");
         groupWindowChooser.visible = true;
     }
@@ -351,18 +357,42 @@ PlasmoidItem {
 
         function onRowsInserted() {
             root.scheduleTaskVisualGroups();
+            // A structural change may shift the chooser's source-model row.
+            if (root.groupVisualParent !== null) {
+                root.closeGroupChooser();
+            }
         }
 
         function onRowsRemoved() {
             root.scheduleTaskVisualGroups();
+            if (root.groupVisualParent !== null) {
+                root.closeGroupChooser();
+            }
         }
 
         function onModelReset() {
             root.scheduleTaskVisualGroups();
+            if (root.groupVisualParent !== null) {
+                root.closeGroupChooser();
+            }
         }
 
         function onDataChanged() {
             root.scheduleTaskVisualGroups();
+            if (root.groupVisualParent !== null) {
+                const groupIndex = taskModel.makeModelIndex(root.groupParentIndex);
+                const isGroup = !!taskModel.data(
+                    groupIndex,
+                    TaskManager.AbstractTasksModel.IsGroupParent
+                );
+                const childCount = Number(taskModel.data(
+                    groupIndex,
+                    TaskManager.AbstractTasksModel.ChildCount
+                ) || 0);
+                if (!isGroup || childCount < 2) {
+                    root.closeGroupChooser();
+                }
+            }
         }
     }
 

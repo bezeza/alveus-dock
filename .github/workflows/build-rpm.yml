@@ -31,6 +31,9 @@ jobs:
             plasma-workspace plasma-workspace-libs libplasma \
             kf6-kcmutils kf6-kirigami kf6-kpackage
 
+      - name: Run Python regression tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+
       - name: Run structural checks
         run: python3 scripts/check-package.py
 

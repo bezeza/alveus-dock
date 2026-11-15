@@ -306,6 +306,16 @@ class PackageContractTests(unittest.TestCase):
         )
         self.assertIn("Layout.preferredHeight: vertical ? panelLength : panelThickness", self.qml)
 
+    def test_launcher_matching_uses_url_fallback_only_when_an_app_id_is_missing(self):
+        start = self.task_delegate.find("function launcherMatchesTask(")
+        end = self.task_delegate.find("\\n    }", start)
+        matcher = self.task_delegate[start:end]
+        self.assertIn("if (launcherAppId && candidateAppId) {", matcher)
+        id_check = matcher.find("return launcherAppId === candidateAppId;")
+        url_fallback = matcher.find("const candidateUrl")
+        self.assertGreaterEqual(id_check, 0)
+        self.assertGreater(url_fallback, id_check)
+
     def test_quick_access_activates_existing_application_instead_of_relaunching(self):
         self.assertIn("function findRunningTaskForLauncher()", self.task_delegate)
         self.assertIn("TaskManager.AbstractTasksModel.AppId", self.task_delegate)

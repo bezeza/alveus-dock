@@ -199,3 +199,17 @@ This file records dated engineering work. It is not a runtime error log and it i
 
 - Created a standalone Plasma applet source layout.
 - Added the first Fedora RPM spec and CI workflow draft.
+
+## 2026-11-15 — version compatibility audit
+
+- The applet metadata declares Plasma 6.8 as its minimum. The RPM requires
+  plasma-workspace, plasma-workspace-libs, and libplasma at version 6.8.0 or
+  newer.
+- The current Fedora 44 CI image resolved Plasma 6.8.2 and Qt 6.11.2.
+- On that environment, all 40 existing Python regression tests passed; package
+  structure checks, strict QML lint, local install/upgrade/removal smoke checks,
+  RPM build, and RPM metadata verification also passed.
+- This confirms compatibility with Plasma 6.8.2, not the exact 6.8.0 baseline.
+  No earlier Plasma version was tested, so keep the declared minimum unchanged
+  until an exact 6.8.0 build is available.
+- No source changes or additional tests were made for this audit.

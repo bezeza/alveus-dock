@@ -285,6 +285,12 @@ class PackageContractTests(unittest.TestCase):
             self.task_delegate,
         )
 
+    def test_group_parent_close_action_is_explicitly_labeled_as_close_all(self):
+        self.assertIn(
+            'delegateRoot.model.IsGroupParent\n                ? qsTr("Close all windows") : qsTr("Close")',
+            self.task_delegate,
+        )
+
     def test_pin_menu_requires_a_nonempty_launcher_url(self):
         self.assertIn(
             'enabled: String(delegateRoot.model.LauncherUrlWithoutIcon || "") !== ""',

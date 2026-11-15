@@ -26,7 +26,7 @@ It is an independent applet, not a patch or replacement for KDE's Icons-Only Tas
 - Keyboard navigation in the chooser with Escape to close and Enter to activate the selected window.
 - Configurable Single, Dual and Adaptive dock layouts.
 - Dual layout separates pinned Quick Access launchers from Running Windows.
-- Clicking a Quick Access launcher activates the most recently active matching window when the application is already running; otherwise it launches the application. A matching startup task suppresses duplicate launch requests.
+- Clicking a Quick Access launcher activates the most recently active matching window in the dock's current TaskManager filter scope when the application is already running; otherwise it launches the application. A matching startup task suppresses duplicate launch requests.
 - Horizontal panels use two rows; vertical panels use two columns.
 - Adaptive layout hides the running-window layer when no windows are open.
 - Running-window delegates preserve KDE's minimize-to-icon geometry for effects such as Magic Lamp.

@@ -297,10 +297,11 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn('"activate-existing-application"', self.task_delegate)
         self.assertIn('"launch-application"', self.task_delegate)
         self.assertIn("delegateRoot.playLaunchReaction();", self.task_delegate)
-        self.assertNotIn(
-            "delegateRoot.playLaunchReaction();\\n                delegateRoot.activateTask();",
-            self.task_delegate,
-        )
+        click_start = self.task_delegate.find("onClicked: mouse =>")
+        click_end = self.task_delegate.find("Controls.ToolTip.visible", click_start)
+        click_handler = self.task_delegate[click_start:click_end]
+        self.assertIn("delegateRoot.activateTask();", click_handler)
+        self.assertNotIn("delegateRoot.playLaunchReaction();", click_handler)
 
     def test_quick_access_does_not_duplicate_an_application_starting(self):
         self.assertIn("TaskManager.AbstractTasksModel.IsStartup", self.task_delegate)

@@ -2,6 +2,23 @@
 
 This file records dated engineering work. It is not a runtime error log and it is not the future roadmap.
 
+## 2026-11-15 — Quick Access activation routing
+
+### Implemented
+- Changed pinned Quick Access clicks to search the existing native KDE TasksModel before dispatching a launch.
+- Match running tasks by KDE AppId, with LauncherUrlWithoutIcon matching as a fallback after removing query metadata.
+- Activate the currently active matching window or the most recently activated matching window; grouped applications resolve to the most recently activated child window.
+- Suppress a second launch request while a matching startup task is already present.
+- Keep the lower Running Windows behavior unchanged: selecting an inactive window activates it, while selecting the active window requests minimization.
+- Play the launch reaction only when Quick Access actually dispatches a new launch.
+
+### Validation
+- Added regression coverage for AppId/launcher URL matching, LastActivated selection, grouped child indices and startup duplicate suppression.
+- CI validation is pending for this change.
+- Live Plasma testing is still required to confirm AppId/launcher URL matching and activation behavior on the target Plasma 6.8 session.
+- Matching intentionally follows the same current-desktop/current-screen filters as the dock's running-window layer.
+
+
 ## 2026-11-14 — 0.3.0 runtime-readiness audit
 
 ### Fixed

@@ -39,7 +39,7 @@ KDE TaskManager's native TasksModel is the single source of truth for applicatio
 - Task actions must use source-model indices. A filtered or visual delegate index must never be passed directly to a TasksModel action.
 - Launcher matching uses KDE AppId first and normalized LauncherUrlWithoutIcon as a fallback.
 - Clicking Quick Access for an already-running application activates its active or most recently activated matching window. A grouped application opens the Window Chooser. A matching startup task suppresses another launch request.
-- Only clicking the active item in Running Windows requests minimization.
+- In Dual/Adaptive layouts, only clicking the active delegate in Running Windows requests minimization; Quick Access never minimizes an already-running application. Single mode retains its existing one-row task behavior.
 - Grouped child actions use the native hierarchical model and **makeModelIndex(parentRow, childRow)**.
 - Running-window and group-parent delegate geometry is published through the native TaskManager API so KWin can target the dock icon for minimize effects such as Magic Lamp.
 
@@ -223,7 +223,21 @@ See **docs/TEST_PLAN.md** for the test matrix and evidence requirements.
 
 A CI pass does not prove runtime correctness. A milestone is not complete until its acceptance criteria pass in a real supported Plasma session.
 
-## 10. Milestone ownership
+## 10. Open implementation decisions
+
+These points must be resolved with a small prototype or documented technical decision before the corresponding feature is implemented:
+
+1. **Per-instance identity and settings scope:** prove how the target Plasma version identifies applet instances and isolates their KConfig values across restart.
+2. **Bookmark storage format:** compare an instance-scoped KConfig value with an instance-scoped versioned JSON sidecar; select one based on atomic writes, recovery, migration and practical collection size.
+3. **Opening targets:** verify the supported KDE/Qt API for handing HTTP/HTTPS and local file targets to the system default handler, including error reporting.
+4. **Popup screen geometry:** verify a Plasma-supported way to anchor popups to delegates and clamp them to the correct screen work area on all four panel edges.
+5. **Icon strategy:** confirm theme icons and user-selected local icons first; do not add remote favicon/thumbnail fetching by default.
+6. **Import conflict policy:** define explicit preview choices for duplicate IDs, duplicate targets, missing local files and unknown item types.
+7. **Recent-item history:** define what is stored, where it is stored, how it can be disabled and how users clear it.
+
+Do not guess at API availability. Record the chosen API, minimum Plasma version, failure handling and regression test in the relevant issue before implementation.
+
+## 11. Milestone ownership
 
 - 0.1.3 — stabilization and native KWin geometry.
 - 0.2.0 — grouped windows and Window Chooser.
@@ -238,7 +252,7 @@ A CI pass does not prove runtime correctness. A milestone is not complete until 
 
 See **docs/ROADMAP.md** and the linked milestone issues for the current delivery checklist.
 
-## 11. Explicit non-goals
+## 12. Explicit non-goals
 
 - Replacing KDE Plasma panels or containments.
 - Replacing KWin or reimplementing KWin effects.

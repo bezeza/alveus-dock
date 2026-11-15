@@ -55,13 +55,16 @@ Record unsupported combinations explicitly rather than assuming compatibility.
 - Click a pinned launcher for a closed app and verify one launch request.
 - Click a pinned launcher for a running app and verify activation without minimizing or duplicate launch.
 - Click a pinned launcher while a matching startup task exists and verify no duplicate launch.
-- Test matching by KDE AppId and LauncherUrlWithoutIcon fallback.
-- Group two or more windows; activate and close each child; ungroup; close the last child.
-- Test Window Chooser focus, Escape, outside click, parent recycling and group collapse.
-- Verify source-model indices are used for all task actions.
+- Test matching by KDE AppId, then exact LauncherUrlWithoutIcon fallback when IDs differ or are unavailable.
+- Group two or more windows; activate and close each child; ungroup; close the last child. Verify the group context-menu action is explicitly labeled "Close all windows".
+- Test Window Chooser focus, Escape, outside click, parent recycling, group collapse and switching to another group while an outside-click close is pending.
+- Verify popup dismissal clears its parent-delegate reference and a subsequent chooser opens on the correct group.
+- Verify source-model indices are used for all task actions, including after TaskManager rows move or the model emits layoutChanged.
 - In Dual/Adaptive modes, verify only the active delegate in Running Windows requests minimization and Quick Access never minimizes an already-running app. Verify Single mode retains its existing one-row task behavior.
-- Verify Magic Lamp targets the correct running-window or group icon after resize, reorder, panel relocation and screen changes.
-- Verify file drops onto running application windows and .desktop launcher drops.
+- Verify Magic Lamp targets the correct running-window or group icon after resize, reorder, TaskManager layout changes, panel relocation and screen changes.
+- Verify file drops onto running application windows. Test launcher drops using .desktop files, applications: URLs and preferred:// URLs; verify mixed launcher/file batches are rejected and duplicate launcher drops are consumed safely.
+- Verify the Pin to Dock menu action is disabled when LauncherUrlWithoutIcon is empty.
+- Verify Adaptive hides the Running Windows layer when no running or startup tasks are present.
 - Verify current-desktop/current-screen filter behavior.
 
 ## 5. Multiple dock and bookmark tests (0.6.0+)

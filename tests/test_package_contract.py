@@ -285,6 +285,12 @@ class PackageContractTests(unittest.TestCase):
             self.task_delegate,
         )
 
+    def test_pin_menu_requires_a_nonempty_launcher_url(self):
+        self.assertIn(
+            'enabled: String(delegateRoot.model.LauncherUrlWithoutIcon || "") !== ""',
+            self.task_delegate,
+        )
+
     def test_window_geometry_is_refreshed_after_layout_changes(self):
         for token in [
             "onXChanged: scheduleIconGeometryPublish()",

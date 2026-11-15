@@ -90,12 +90,12 @@ Item {
             index,
             TaskManager.AbstractTasksModel.AppId
         ) || "");
-        if (launcherAppId && candidateAppId) {
-            // A known but different service ID is a mismatch, not a reason to
-            // fall back to a URL comparison. URL matching is only for missing IDs.
-            return launcherAppId === candidateAppId;
+        if (launcherAppId && launcherAppId === candidateAppId) {
+            return true;
         }
 
+        // Match KDE TaskManager::appsMatch: try the normalized launcher URL
+        // when AppIds do not match, including when both IDs are present.
         const candidateUrl = normalizedLauncherUrl(delegateRoot.taskModel.data(
             index,
             TaskManager.AbstractTasksModel.LauncherUrlWithoutIcon

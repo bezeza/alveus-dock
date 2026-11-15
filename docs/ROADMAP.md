@@ -103,7 +103,10 @@ Tracking: [GitHub Issue #7](https://github.com/bezeza/alveus-dock/issues/7).
 
 Tracking: [GitHub Issue #8](https://github.com/bezeza/alveus-dock/issues/8).
 
-- [ ] Build a reusable folder-popup controller anchored to the source bookmark icon.
+- [ ] Build a reusable **flyout folder popup** anchored to the source bookmark icon. Activating a folder in Quick Access opens a temporary floating panel beside/above/below that icon; this is not a permanently visible Folder Portal.
+- [ ] Make the flyout the default folder interaction: clicking/tapping the same folder toggles it closed; opening another folder closes the previous popup; outside click and Escape close it; focus returns to the source folder.
+- [ ] Open nested folders inside the same flyout, with a visible breadcrumb and Back/Up action; do not spawn a separate window for each folder level. Selecting a bookmark opens it through the system's default handler.
+- [ ] Choose the opening direction from the dock edge (bottom → up, top → down, left → right, right → left), then flip/clamp the popup when needed so it remains inside the active screen work area; allow a per-folder direction override.
 - [ ] Implement Grid as the default folder view, with per-folder style persistence.
 - [ ] Implement List and Category tree as the first practical alternatives.
 - [ ] Add edge-aware popup placement for bottom, top, left and right docks; keep the full popup within the active screen work area.

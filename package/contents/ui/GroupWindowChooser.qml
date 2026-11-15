@@ -46,6 +46,9 @@ PlasmaCore.PopupPlasmaWindow {
 
     function cancelPendingClose() {
         closeTimer.stop();
+        if (visible) {
+            requestActivate();
+        }
     }
 
     function modelIndexForChild(childRow) {

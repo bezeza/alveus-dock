@@ -134,9 +134,8 @@ Item {
 
     function findRunningTaskForLauncher() {
         const launcherAppId = String(delegateRoot.model.AppId || "");
-        const launcherUrl = launcherUrlKey(
-            delegateRoot.model.LauncherUrlWithoutIcon || delegateRoot.model.LauncherUrl
-        );
+        const launcherUrl = launcherUrlKey(delegateRoot.model.LauncherUrlWithoutIcon)
+            || launcherUrlKey(delegateRoot.model.LauncherUrl);
         if (!launcherAppId && !launcherUrl) {
             return null;
         }

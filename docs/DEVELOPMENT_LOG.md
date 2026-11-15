@@ -12,6 +12,7 @@ This file records dated engineering work. It is not a runtime error log and it i
 ### Validation
 - Added a regression test for the task-kind role gate.
 - Added an explicit Python unittest discovery step to the Fedora 44 CI workflow so the existing regression suite is executed rather than only checked structurally.
+- Updated the existing geometry-role regression assertion to validate the cached role list instead of the removed handler-local array.
 - Live Plasma CPU/RSS comparison remains a separate runtime check.
 
 

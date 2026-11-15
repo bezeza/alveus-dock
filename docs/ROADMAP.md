@@ -72,8 +72,10 @@ Build a small, responsive KDE Plasma dock that feels more expressive than Icons-
 
 ## 0.6.0 — multiple dock instances and bookmark panels
 
+Tracking: [GitHub Issue #7](https://github.com/bezeza/alveus-dock/issues/7).
+
 - [ ] Verify how Plasma handles multiple instances of the Alveus Dock applet in the same or different containments, including per-instance configuration and persistence; confirm the supported behavior before implementation.
-- [ ] Support multiple independent Alveus Dock instances on one desktop, placed on different panel edges through native Plasma containment placement.
+- [ ] Support multiple independent Alveus Dock applet instances on one desktop. Users create and place instances through native Plasma panel/widget controls; Alveus Dock does not create or manage Plasma containments.
 - [ ] Give each instance its own content profile: **Applications** (Quick Access + Running Windows), **Bookmarks** (web links, files and folders), or **Hybrid** (both).
 - [ ] Keep the KDE TasksModel dedicated to application launchers and running windows; implement bookmark items in a separate model so URLs and files never enter task/window handling.
 - [ ] Isolate each instance's content list and settings: profile, items, order, grouping, icon size, labels, spacing, background/transparency and relevant task filters.
@@ -88,6 +90,8 @@ Build a small, responsive KDE Plasma dock that feels more expressive than Icons-
 **Exit criteria:** a user can run an Applications Dock at the bottom and a separate Bookmarks Dock on a side edge, each with independent content and settings; both survive Plasma restart and behave correctly without regressions to task grouping, window activation or Magic Lamp geometry.
 
 ## 0.7.0 — customizable bookmark folder expansion
+
+Tracking: [GitHub Issue #8](https://github.com/bezeza/alveus-dock/issues/8).
 
 - [ ] Build a reusable folder-popup controller anchored to the source bookmark icon.
 - [ ] Implement Grid as the default folder view, with per-folder style persistence.
@@ -104,14 +108,68 @@ Build a small, responsive KDE Plasma dock that feels more expressive than Icons-
 
 **Exit criteria:** each folder can independently open in its configured style; popups remain on-screen, are usable with pointer and keyboard, respect reduced motion and preserve their configuration across Plasma restarts.
 
+## 0.8.0 — content management and data portability
+
+Tracking: [GitHub Issue #9](https://github.com/bezeza/alveus-dock/issues/9).
+
+- [ ] Build an editor for the current applet instance's content: add, rename, remove, reorder, group, choose icons and edit item properties.
+- [ ] Add search across bookmark titles and targets, plus filters by item type and folder/category.
+- [ ] Add sorting by manual order, title and type; preserve manual order when returning from a temporary sort.
+- [ ] Add optional favorites and recently used items, including a clear history opt-out.
+- [ ] Add duplicate detection and an explicit user-controlled duplicate policy; never silently delete or merge user entries.
+- [ ] Define a versioned, validated bookmark export format and preview imports before applying them.
+- [ ] Add backup, restore and recovery from a previous known-good collection.
+- [ ] Add safe import/export for one applet instance at a time, with explicit handling for duplicates and missing targets.
+- [ ] Add schema migrations with a backup before migration and rollback if validation or persistence fails.
+- [ ] Verify writes are atomic or recoverable; a failed import must not partially overwrite the current collection.
+- [ ] Add saved dock presets for content and appearance without claiming to create, move or configure Plasma panels.
+- [ ] Test large collections and ensure editing/search does not block the QML/UI thread.
+
+**Exit criteria:** users can manage and search a bookmark collection, export and restore it safely, migrate supported schema versions, and cannot accidentally overwrite another applet instance's data.
+
+## 0.9.0 — security, accessibility and release hardening
+
+Tracking: [GitHub Issue #10](https://github.com/bezeza/alveus-dock/issues/10).
+
+- [ ] Enforce an allowlist for bookmark targets: HTTP/HTTPS and validated local file targets; reject command, script and unknown schemes.
+- [ ] Open targets through system default handlers; never construct shell commands from bookmark content.
+- [ ] Validate imported data, schema versions, item types, URLs and icon metadata as untrusted input.
+- [ ] Verify credentials are not stored/exported and diagnostic logs never include raw URLs, paths, window titles or document names.
+- [ ] Keep remote icon/thumbnail fetching disabled by default unless a separate privacy and performance decision approves it.
+- [ ] Complete keyboard-only navigation, visible focus, accessible names/roles and predictable focus restoration.
+- [ ] Verify reduced-motion support, optional animations, contrast and practical icon sizes.
+- [ ] Test screen-reader workflows with an available reader.
+- [ ] Measure CPU/RSS with one, two and three or more dock instances, both idle and during interaction.
+- [ ] Test 100+ bookmark items, large folders, grouped windows and popup responsiveness.
+- [ ] Verify no polling loop, permanent animation loop or resident background service has been introduced.
+- [ ] Complete Wayland/X11, four-edge, multiple-monitor and fractional-scaling tests for the declared support matrix.
+- [ ] Resolve all critical/high-severity defects and publish troubleshooting and compatibility documentation.
+
+**Exit criteria:** security, privacy, accessibility and performance checks pass on the documented supported Plasma environments; no critical/high-severity defect or known data-loss path remains.
+
 ## 1.0.0 — stable Fedora release
 
-- [ ] Tag a stable release.
-- [ ] Build and verify RPMs in CI.
-- [ ] Test the package in a clean Fedora KDE environment.
+Tracking: [GitHub Issue #11](https://github.com/bezeza/alveus-dock/issues/11).
+
+- [ ] Confirm all milestone exit criteria from 0.1.3 through 0.9.0 are satisfied or explicitly documented as out of scope.
+- [ ] Complete a release-candidate freeze and resolve all critical/high-severity defects.
+- [ ] Bump the applet metadata, QML plugin version and RPM spec together to 1.0.0 only after release-candidate validation.
+- [ ] Build and verify RPMs in CI, including metadata, file list and dependencies.
+- [ ] Test clean install, upgrade, restart, logout/login and removal on a clean supported Fedora KDE environment.
+- [ ] Verify the published compatibility matrix against actual Wayland/X11 and Plasma test evidence.
 - [ ] Create and publish the COPR repository.
 - [ ] Verify the public DNF installation and removal commands.
-- [ ] Publish release notes and a troubleshooting guide.
+- [ ] Publish release notes, user guide, architecture overview and troubleshooting guide.
+- [ ] Tag the stable release and attach the verified RPM artifacts.
+
+## Cross-cutting engineering gates
+
+- Every milestone has a focused GitHub issue, acceptance criteria and a live Plasma checklist where runtime behavior is involved.
+- Keep CI green, strict QML lint at zero warnings, and regression coverage for every fixed defect.
+- Do not merge a milestone into main until its dependent PRs are validated in order and its live Plasma checklist is complete.
+- Keep current product documentation honest: README describes implemented behavior; CHANGELOG records completed user-visible changes; ROADMAP describes future work; DEVELOPMENT_LOG records engineering activity.
+- Keep the applet lightweight: no daemon, polling loop, arbitrary shell execution or unnecessary network requests.
+- Never claim a feature, compatibility combination, screenshot, performance result or release channel is verified unless evidence exists.
 
 ## Explicit non-goals for the first stable release
 

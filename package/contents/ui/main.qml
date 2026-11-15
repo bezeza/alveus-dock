@@ -370,6 +370,15 @@ PlasmoidItem {
             }
         }
 
+        function onRowsMoved() {
+            root.scheduleTaskVisualGroups();
+            // A move can change source-model rows used by the chooser's
+            // hierarchical parent index. Close rather than retain a stale index.
+            if (root.groupVisualParent !== null) {
+                root.closeGroupChooser();
+            }
+        }
+
         function onModelReset() {
             root.scheduleTaskVisualGroups();
             if (root.groupVisualParent !== null) {

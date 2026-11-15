@@ -14,6 +14,7 @@ GROUP_CHOOSER_PATH = ROOT / "package/contents/ui/GroupWindowChooser.qml"
 TASK_DELEGATE_PATH = ROOT / "package/contents/ui/TaskDelegate.qml"
 LAYOUT_CONFIG_PATH = ROOT / "package/contents/config/ConfigLayout.qml"
 CONFIG_XML_PATH = ROOT / "package/contents/config/main.xml"
+INSTALL_SCRIPT_PATH = ROOT / "scripts/install-local.sh"
 APP_CONFIG_PATHS = [
     ROOT / "package/contents/config/ConfigAppearance.qml",
     ROOT / "package/contents/config/ConfigBehavior.qml",
@@ -33,6 +34,16 @@ class PackageContractTests(unittest.TestCase):
         cls.spec = (ROOT / "packaging/alveus-dock.spec").read_text(encoding="utf-8")
         cls.kcfg = ET.parse(CONFIG_XML_PATH).getroot()
         cls.config_qml = "\n".join(path.read_text(encoding="utf-8") for path in APP_CONFIG_PATHS)
+        cls.install_script = INSTALL_SCRIPT_PATH.read_text(encoding="utf-8")
+
+    def test_local_install_script_upgrades_existing_applet(self):
+        self.assertIn(
+            'installed_packages="$(kpackagetool6 --type Plasma/Applet --list)"',
+            self.install_script,
+        )
+        self.assertIn('grep -Fq "org.bezeza.alveusdock"', self.install_script)
+        self.assertIn("kpackagetool6 --type Plasma/Applet --upgrade", self.install_script)
+        self.assertIn("kpackagetool6 --type Plasma/Applet --install", self.install_script)
 
     def test_applet_and_rpm_versions_match(self):
         version = self.metadata["KPlugin"]["Version"]

@@ -44,6 +44,10 @@ PlasmaCore.PopupPlasmaWindow {
             ? Qt.BottomEdge : Qt.TopEdge;
     }
 
+    function cancelPendingClose() {
+        closeTimer.stop();
+    }
+
     function modelIndexForChild(childRow) {
         if (!visualParent || parentIndex < 0
                 || !Number.isInteger(childRow) || childRow < 0 || childRow >= childCount) {

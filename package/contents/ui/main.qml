@@ -148,6 +148,7 @@ PlasmoidItem {
     function isApplicationLauncher(url) {
         const value = url.toString().toLowerCase();
         return value.startsWith("applications:")
+               || value.startsWith("preferred://")
                || value.endsWith(".desktop")
                || value.includes(".desktop?");
     }

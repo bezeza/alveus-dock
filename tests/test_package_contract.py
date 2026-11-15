@@ -212,6 +212,7 @@ class PackageContractTests(unittest.TestCase):
             r"groupVisualParent\s*===\s*delegateRoot\s*&&\s*!!delegateRoot\.model\.IsGroupParent",
         )
         self.assertIn("groupParentIndex = sourceIndex", handler)
+        self.assertIn("scheduleIconGeometryPublish()", handler)
 
     def test_task_row_moves_resync_visual_groups_and_close_the_chooser(self):
         handler_start = self.qml.find("function onRowsMoved()")

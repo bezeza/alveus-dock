@@ -319,7 +319,11 @@ Item {
     }
 
     onSourceIndexChanged: {
-        if (delegateRoot.dockRoot.groupVisualParent === delegateRoot) {
+        // A grouped-window chooser may be anchored to a Quick Access launcher.
+        // In that case its parentIndex is the separate running-group row, not
+        // this launcher's source index. Only a group delegate owns that index.
+        if (delegateRoot.dockRoot.groupVisualParent === delegateRoot
+                && !!delegateRoot.model.IsGroupParent) {
             delegateRoot.dockRoot.groupParentIndex = sourceIndex;
         }
     }

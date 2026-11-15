@@ -6,6 +6,11 @@ Alveus Dock is a lightweight KDE Plasma 6 applet written in QML. The current tar
 
 - Keep the dock standalone. Do not patch or replace KDE's Icons-Only Task Manager.
 - Use KDE/Plasma APIs for task discovery, launchers and window actions.
+- Keep future bookmark collections in a separate bookmark model; never insert URLs, files, folders or bookmark groups into KDE TasksModel.
+- Treat multiple docks as separate native Plasma applet instances. Plasma owns panel creation, placement and containment lifecycle; do not implement a parallel panel manager.
+- Verify per-instance configuration/storage isolation in live Plasma before choosing bookmark persistence keys or file paths.
+- Open supported bookmark targets through system default handlers; allow only explicitly supported URL/file targets and never execute bookmark text through a shell.
+- Keep folder popup views anchored to their source icon, inside the active screen work area, keyboard-accessible and compatible with reduced-motion settings.
 - Use the native TasksModel hierarchical grouping API for grouped windows; do not duplicate window discovery or maintain a second window registry.
 - For Dual/Adaptive layouts, keep KDE TasksModel as the only source of launcher/window data and split presentation with Qt DelegateModel groups.
 - Preserve the source TaskManager row index when using filtered DelegateModel views; never pass a filtered view index to TasksModel actions.
@@ -23,6 +28,9 @@ Alveus Dock is a lightweight KDE Plasma 6 applet written in QML. The current tar
 - KWin effects such as Magic Lamp belong to KWin; do not try to recreate or control them from the applet.
 - Keep the project small. Do not add a Rust daemon, resident service, Windows port or broad cross-platform layer unless the maintainer explicitly changes the scope.
 - Avoid new runtime dependencies unless they solve a demonstrated problem.
+- Validate imported bookmark data as untrusted input; reject unsupported schemes, command strings and unknown item types.
+- Do not fetch remote bookmark icons/previews by default or log raw URLs, file paths, titles or credentials.
+- Keep structured bookmark persistence versioned, recoverable and isolated per applet instance.
 
 ## Performance and interaction rules
 
@@ -65,7 +73,7 @@ Alveus Dock is a lightweight KDE Plasma 6 applet written in QML. The current tar
 
 ## Required checks
 
-Before proposing a change, run the checks available in the environment:
+Before proposing a change, run the checks available in the environment and follow docs/TEST_PLAN.md for the relevant milestone:
 
 1. `python3 scripts/check-package.py`
 2. `python3 -m unittest discover -s tests -v`

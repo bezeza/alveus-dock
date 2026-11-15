@@ -164,25 +164,29 @@ Item {
                 TaskManager.AbstractTasksModel.IsGroupParent
             );
             if (isGroupParent) {
-                const parentMatches = launcherMatchesTask(
+                let groupMatches = launcherMatchesTask(
                     candidateIndex,
                     launcherAppId,
                     launcherUrl
                 );
-                const childCount = delegateRoot.taskModel.rowCount(candidateIndex);
-                for (let childRow = 0; childRow < childCount; ++childRow) {
-                    const childIndex = delegateRoot.taskModel.makeModelIndex(row, childRow);
-                    const isWindow = !!delegateRoot.taskModel.data(
-                        childIndex,
-                        TaskManager.AbstractTasksModel.IsWindow
-                    );
-                    if (!isWindow || (!parentMatches
-                            && !launcherMatchesTask(childIndex, launcherAppId, launcherUrl))) {
-                        continue;
+                if (!groupMatches) {
+                    const childCount = delegateRoot.taskModel.rowCount(candidateIndex);
+                    for (let childRow = 0; childRow < childCount; ++childRow) {
+                        const childIndex = delegateRoot.taskModel.makeModelIndex(row, childRow);
+                        const isWindow = !!delegateRoot.taskModel.data(
+                            childIndex,
+                            TaskManager.AbstractTasksModel.IsWindow
+                        );
+                        if (isWindow && launcherMatchesTask(childIndex, launcherAppId, launcherUrl)) {
+                            groupMatches = true;
+                            break;
+                        }
                     }
-                    if (isMoreRecentlyActivated(childIndex, bestWindowIndex)) {
-                        bestWindowIndex = childIndex;
-                    }
+                }
+                if (groupMatches) {
+                    // The user pinned an application, not a particular window.
+                    // Let them choose when KDE has grouped multiple windows.
+                    return { kind: "group", parentRow: row };
                 }
                 continue;
             }
@@ -265,7 +269,14 @@ Item {
 
         if (model.IsLauncher) {
             const existingTask = findRunningTaskForLauncher();
-            if (existingTask && existingTask.kind === "window") {
+            if (existingTask && existingTask.kind === "group") {
+                // Anchor the chooser to the pinned icon while keeping the
+                // group's top-level source row for the hierarchical child model.
+                delegateRoot.dockRoot.toggleGroupChooser(delegateRoot, existingTask.parentRow);
+                delegateRoot.dockRoot.logInfo("launcher-group-chooser-toggled", {
+                    taskIndex: existingTask.parentRow
+                });
+            } else if (existingTask && existingTask.kind === "window") {
                 // Quick Access raises the most recently active window; it never
                 // minimizes an application just because its launcher was clicked.
                 delegateRoot.dockRoot.runAction(

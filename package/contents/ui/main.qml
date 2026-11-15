@@ -399,6 +399,16 @@ PlasmoidItem {
             }
         }
 
+        function onLayoutChanged() {
+            root.scheduleTaskVisualGroups();
+            // QSortFilterProxyModel may reorder rows without rowsMoved.
+            // Drop the chooser's row reference and refresh KWin icon geometry.
+            if (root.groupVisualParent !== null) {
+                root.closeGroupChooser();
+            }
+            iconGeometryTimer.restart();
+        }
+
         function onDataChanged() {
             root.scheduleTaskVisualGroups();
             if (root.groupVisualParent !== null) {

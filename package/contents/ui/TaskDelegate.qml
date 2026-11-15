@@ -572,8 +572,7 @@ Item {
                 ? qsTr("Unpin from Dock")
                 : qsTr("Pin to Dock")
 
-            enabled: delegateRoot.model.LauncherUrlWithoutIcon !== undefined
-                     && delegateRoot.model.LauncherUrlWithoutIcon !== null
+            enabled: String(delegateRoot.model.LauncherUrlWithoutIcon || "") !== ""
 
             onTriggered: {
                 const launcherUrl = delegateRoot.model.LauncherUrlWithoutIcon;

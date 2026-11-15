@@ -34,10 +34,12 @@ required = [
     "scripts/profile-plasmashell.py",
     "CHANGELOG.md",
     "package/contents/ui/main.qml",
+    "package/contents/ui/TaskDelegate.qml",
     "package/contents/ui/GroupWindowChooser.qml",
     "package/contents/config/config.qml",
     "package/contents/config/ConfigAppearance.qml",
     "package/contents/config/ConfigBehavior.qml",
+    "package/contents/config/ConfigLayout.qml",
     "package/contents/config/main.xml",
     "packaging/alveus-dock.spec",
     "packaging/COPR.md",
@@ -55,6 +57,8 @@ for relative in required:
 ET.parse(ROOT / "package/contents/config/main.xml")
 
 qml = (ROOT / "package/contents/ui/main.qml").read_text(encoding="utf-8")
+task_delegate = (ROOT / "package/contents/ui/TaskDelegate.qml").read_text(encoding="utf-8")
+qml_all = qml + "\n" + task_delegate
 for token in [
     "org.kde.taskmanager",
     "TaskManager.TasksModel",
@@ -74,7 +78,7 @@ for token in [
     "requestOpenUrls",
     "requestNewInstance",
     "requestClose",
-    "taskModel.move",
+    "taskModel.move(sourceIndex, reorderTargetIndex)",
     "taskModel.syncLaunchers",
     "taskReorderingEnabled",
     "ListView.onPooled",
@@ -84,7 +88,9 @@ for token in [
     "launchPulse",
     "attentionReaction",
     "DropArea",
-    "dockList.indexAt",
+    "reorderList.indexAt",
+    "taskList.indexAt",
+    "itemAtIndex(",
     "drop.source.dockIndex",
     "Drag.source: delegateRoot",
     "[AlveusDock][INFO]",
@@ -93,14 +99,16 @@ for token in [
     "applet-started",
     "action-failed:",
 ]:
-    assert token in qml, f"Missing QML feature: {token}"
+    assert token in qml_all, f"Missing QML feature: {token}"
 
 for relative in [
     "package/contents/ui/main.qml",
+    "package/contents/ui/TaskDelegate.qml",
     "package/contents/ui/GroupWindowChooser.qml",
     "package/contents/config/config.qml",
     "package/contents/config/ConfigAppearance.qml",
     "package/contents/config/ConfigBehavior.qml",
+    "package/contents/config/ConfigLayout.qml",
 ]:
     source = (ROOT / relative).read_text(encoding="utf-8")
     assert "SPDX-License-Identifier: GPL-3.0-only" in source, f"Wrong or missing SPDX header in {relative}"
@@ -131,6 +139,17 @@ assert "dropTarget" not in qml, "Stale dropTarget reference remains"
 assert qml.count("DropArea {") == 1
 qml_version = re.search(r'version:\s*"([^"]+)"', qml)
 assert qml_version and qml_version.group(1) == version, "Runtime log and package versions differ"
+layout_config = (ROOT / "package/contents/config/ConfigLayout.qml").read_text(encoding="utf-8")
+for token in [
+    "cfg_dockLayoutMode", "cfg_layerSpacing",
+    "cfg_quickAccessIconSize", "cfg_runningTasksIconSize",
+    "cfg_quickAccessSpacing", "cfg_runningTasksSpacing",
+    "Single row", "Dual layer", "Adaptive"
+]:
+    assert token in layout_config, f"Missing layout control: {token}"
+
+assert "dockLayoutMode" in (ROOT / "package/contents/config/main.xml").read_text(encoding="utf-8")
+assert "layerSpacing" in (ROOT / "package/contents/config/main.xml").read_text(encoding="utf-8")
 assert "UnqualifiedAccess=error" in (ROOT / ".qmllint.ini").read_text(encoding="utf-8")
 assert "docs/SCREENSHOTS.md" in (ROOT / "README.md").read_text(encoding="utf-8")
 

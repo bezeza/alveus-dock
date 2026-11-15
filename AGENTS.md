@@ -6,13 +6,31 @@ Alveus Dock is a lightweight KDE Plasma 6 applet written in QML. The current tar
 
 - Keep the dock standalone. Do not patch or replace KDE's Icons-Only Task Manager.
 - Use KDE/Plasma APIs for task discovery, launchers and window actions.
+- Keep future bookmark collections in a separate bookmark model; never insert URLs, files, folders or bookmark groups into KDE TasksModel.
+- Treat multiple docks as separate native Plasma applet instances. Plasma owns panel creation, placement and containment lifecycle; do not implement a parallel panel manager.
+- Verify per-instance configuration/storage isolation in live Plasma before choosing bookmark persistence keys or file paths.
+- Open supported bookmark targets through system default handlers; allow only explicitly supported URL/file targets and never execute bookmark text through a shell.
+- Keep folder popup views anchored to their source icon, inside the active screen work area, keyboard-accessible and compatible with reduced-motion settings.
 - Use the native TasksModel hierarchical grouping API for grouped windows; do not duplicate window discovery or maintain a second window registry.
+- For Dual/Adaptive layouts, keep KDE TasksModel as the only source of launcher/window data and split presentation with Qt DelegateModel groups.
+- Preserve the source TaskManager row index when using filtered DelegateModel views; never pass a filtered view index to TasksModel actions.
+- Keep launcher reordering in Quick Access only when layers are split; do not reorder the Running Windows layer.
+- In split layouts, a Quick Access click must first resolve a matching running task by KDE AppId, with LauncherUrlWithoutIcon as a fallback, and activate the active or most recently activated matching window instead of launching another instance.
+- When a Quick Access launcher matches a grouped application, open the Window Chooser anchored to that launcher and pass the group's top-level source row as the chooser parent; use makeModelIndex(parentRow, childRow) for child-window actions.
+- A Quick Access click must never minimize an already-running window. Only clicking the active delegate in Running Windows toggles minimization.
+- If a matching startup task already exists, do not dispatch another launch request.
+- Quick Access matching uses the same TaskManager filters as the visible Running Windows layer; document this scope and validate it in live Plasma.
+- Keep Single mode as the compatibility default; Adaptive hides only the empty running layer, not pinned launchers.
+- Derive horizontal two-row and vertical two-column geometry from the same icon extent and spacing settings.
 - For a grouped child, build its model index with makeModelIndex(parentRow, childRow). Never pass a child row as a top-level task index.
 - Close transient group choosers when their parent delegate is pooled, reused or no longer represents a group.
 - Keep group-parent delegate geometry published to TaskManager so KWin minimize effects continue targeting the dock icon.
 - KWin effects such as Magic Lamp belong to KWin; do not try to recreate or control them from the applet.
 - Keep the project small. Do not add a Rust daemon, resident service, Windows port or broad cross-platform layer unless the maintainer explicitly changes the scope.
 - Avoid new runtime dependencies unless they solve a demonstrated problem.
+- Validate imported bookmark data as untrusted input; reject unsupported schemes, command strings and unknown item types.
+- Do not fetch remote bookmark icons/previews by default or log raw URLs, file paths, titles or credentials.
+- Keep structured bookmark persistence versioned, recoverable and isolated per applet instance.
 
 ## Performance and interaction rules
 
@@ -55,7 +73,7 @@ Alveus Dock is a lightweight KDE Plasma 6 applet written in QML. The current tar
 
 ## Required checks
 
-Before proposing a change, run the checks available in the environment:
+Before proposing a change, run the checks available in the environment and follow docs/TEST_PLAN.md for the relevant milestone:
 
 1. `python3 scripts/check-package.py`
 2. `python3 -m unittest discover -s tests -v`

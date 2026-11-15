@@ -7,7 +7,9 @@ Alveus Dock is a lightweight, standalone dock applet for KDE Plasma 6. It uses K
 
 It is an independent applet, not a patch or replacement for KDE's Icons-Only Task Manager. It can be used on its own or alongside other Plasma panel widgets.
 
-> **Project status:** 0.2.0 window-grouping development branch, based on the 0.1.3 stabilization work. Runtime testing in a live Plasma session is still required. CI checks do not replace testing in a running desktop session.
+> **Project status:** 0.3.0 dual-layer layout development branch, based on the 0.2.0 window-grouping work. Runtime testing in a live Plasma session is still required. CI checks do not replace testing in a running desktop session.
+
+See the [architecture](docs/ARCHITECTURE.md), [test plan](docs/TEST_PLAN.md) and [roadmap](docs/ROADMAP.md) for design boundaries, validation requirements and planned milestones.
 
 ## Features
 
@@ -17,13 +19,19 @@ It is an independent applet, not a patch or replacement for KDE's Icons-Only Tas
 - Middle-click requests a new application instance.
 - Right-click offers pin/unpin, new instance and close actions.
 - Drag icons to reorder tasks.
-- Drop .desktop files or applications: URLs on the dock to pin launchers.
+- Drop .desktop files, applications: URLs or preferred:// URLs on the dock to pin launchers.
 - Drop files onto a running application icon to open them with that application.
 - Optional filtering to the current virtual desktop and current screen.
 - Publishes running-window and grouped-task icon geometry to KDE TaskManager so KWin can target the Alveus icon for minimize effects such as Magic Lamp.
 - Optional grouping of windows from the same application using KDE's native TaskManager model.
 - Compact window chooser for grouped applications, with individual activate and close actions.
 - Keyboard navigation in the chooser with Escape to close and Enter to activate the selected window.
+- Configurable Single, Dual and Adaptive dock layouts.
+- Dual layout separates pinned Quick Access launchers from Running Windows.
+- Clicking a Quick Access launcher opens the Window Chooser when matching windows are grouped; otherwise it activates the most recently active matching window in the dock's current TaskManager filter scope. It launches only when no matching window or startup task exists.
+- Horizontal panels use two rows; vertical panels use two columns.
+- Adaptive layout hides the running-window layer when no running or startup tasks are present.
+- Running-window delegates preserve KDE's minimize-to-icon geometry for effects such as Magic Lamp.
 - Window-count badge on grouped application icons and an ungroup action in the context menu.
 
 ### Motion and visual feedback
@@ -45,6 +53,9 @@ KWin effects such as Magic Lamp remain KDE/KWin features and are not reimplement
 - Drag-to-reorder toggle.
 - Current-desktop and current-screen filters.
 - Optional application grouping, disabled by default.
+- Dock layout mode: Single, Dual or Adaptive.
+- Independent icon sizes and spacing for Quick Access and Running Windows.
+- Spacing between the two layers.
 
 ### Diagnostics
 - Structured INFO, WARN and ERROR messages in the Plasma/Qt journal.
@@ -118,6 +129,8 @@ Install the applet for the current user:
 bash scripts/install-local.sh
 ~~~
 
+The script installs the applet or upgrades an existing current-user installation. After an upgrade, remove and re-add existing panel instances to load the new QML.
+
 Remove the development install:
 
 ~~~bash
@@ -149,7 +162,7 @@ A successful CI build confirms package structure and buildability. It does **not
 
 ## Repository map
 
-- **package/** - Plasma applet metadata, QML UI and settings.
+- **package/** - Plasma applet metadata, QML UI, shared task delegate and settings.
 - **packaging/** - Fedora RPM spec and COPR publication notes.
 - **scripts/** - local install, uninstall, checks, RPM build and log collection.
 - **docs/ROADMAP.md** - future work only.

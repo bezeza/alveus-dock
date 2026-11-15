@@ -1,7 +1,7 @@
 Name:           alveus-dock
 Version:        0.1.3
 Release:        1%{?dist}
-Summary:        Lightweight animated application dock for KDE Plasma 6
+Summary:        Configurable single and dual-layer application dock for KDE Plasma 6
 
 License:        GPL-3.0-only
 Source0:        %{name}-%{version}.tar.gz
@@ -15,9 +15,9 @@ Requires:       kf6-kirigami
 Requires:       qt6-qtdeclarative
 
 %description
-Alveus Dock is a compact KDE Plasma applet using KDE's native TaskManager
-model for application launchers and window actions. It adds lightweight
-icon reactions, launcher drops and manual task reordering.
+Alveus Dock is a KDE Plasma applet using KDE's native TaskManager model for
+pinned launchers and running windows. It supports single-row, dual-layer and
+adaptive layouts, grouped windows, launcher drops and lightweight icon reactions.
 
 %prep
 %autosetup -n %{name}-%{version}

@@ -25,6 +25,7 @@ PlasmaCore.PopupPlasmaWindow {
 
     signal activateRequested(var childIndex)
     signal closeRequested(var childIndex)
+    signal dismissed()
 
     readonly property int childCount: visualParent && parentIndex >= 0
         ? taskModel.rowCount(taskModel.makeModelIndex(parentIndex)) : 0
@@ -41,6 +42,13 @@ PlasmaCore.PopupPlasmaWindow {
         }
         return Plasmoid.location === PlasmaCore.Types.TopEdge
             ? Qt.BottomEdge : Qt.TopEdge;
+    }
+
+    function cancelPendingClose() {
+        closeTimer.stop();
+        if (visible) {
+            requestActivate();
+        }
     }
 
     function modelIndexForChild(childRow) {
@@ -206,6 +214,7 @@ PlasmaCore.PopupPlasmaWindow {
             requestActivate();
         } else {
             closeTimer.stop();
+            chooser.dismissed();
         }
     }
 }

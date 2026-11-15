@@ -29,7 +29,7 @@ jobs:
             rpm-build rpmdevtools python3 tar gzip \
             qt6-qtdeclarative-devel \
             plasma-workspace plasma-workspace-libs libplasma \
-            kf6-kcmutils kf6-kirigami
+            kf6-kcmutils kf6-kirigami kf6-kpackage
 
       - name: Run structural checks
         run: python3 scripts/check-package.py
@@ -42,16 +42,37 @@ jobs:
           python3 -m py_compile scripts/check-package.py scripts/profile-plasmashell.py tests/test_package_contract.py
           bash -n scripts/build-rpm.sh scripts/collect-logs.sh scripts/install-local.sh scripts/uninstall-local.sh
 
+      - name: Smoke-test local Plasma package install and upgrade
+        shell: bash
+        run: |
+          set -euo pipefail
+          test_home="$(mktemp -d)"
+          trap 'rm -rf "$test_home"' EXIT
+          export HOME="$test_home"
+          export XDG_DATA_HOME="$test_home/.local/share"
+          export QT_QPA_PLATFORM=offscreen
+          mkdir -p "$XDG_DATA_HOME"
+          bash scripts/install-local.sh
+          bash scripts/install-local.sh
+          kpackagetool6 --type Plasma/Applet --list | grep -Fq "org.bezeza.alveusdock"
+          kpackagetool6 --type Plasma/Applet --remove org.bezeza.alveusdock
+          if kpackagetool6 --type Plasma/Applet --list | grep -Fq "org.bezeza.alveusdock"; then
+            echo "Applet remained installed after removal." >&2
+            exit 1
+          fi
+
       - name: Lint QML
         run: |
           export PATH=/usr/lib64/qt6/bin:$PATH
           export QML_IMPORT_PATH=/usr/lib64/qt6/qml
           qmllint --max-warnings 0 -I /usr/lib64/qt6/qml \
             package/contents/ui/main.qml \
+            package/contents/ui/TaskDelegate.qml \
             package/contents/ui/GroupWindowChooser.qml \
             package/contents/config/config.qml \
             package/contents/config/ConfigAppearance.qml \
-            package/contents/config/ConfigBehavior.qml
+            package/contents/config/ConfigBehavior.qml \
+            package/contents/config/ConfigLayout.qml
 
       - name: Build RPM
         run: bash scripts/build-rpm.sh

@@ -321,6 +321,10 @@ Item {
     }
 
     onSourceIndexChanged: {
+        // A moved source row can still occupy the same visual geometry. Republish
+        // it so KWin's minimize target follows the task's new model index.
+        scheduleIconGeometryPublish();
+
         // A grouped-window chooser may be anchored to a Quick Access launcher.
         // In that case its parentIndex is the separate running-group row, not
         // this launcher's source index. Only a group delegate owns that index.

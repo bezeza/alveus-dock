@@ -8,6 +8,8 @@ Build a small, responsive KDE Plasma dock that feels more expressive than Icons-
 
 ## Next: 0.1.x stabilization (0.1.3)
 
+Tracking: [GitHub Issue #2](https://github.com/bezeza/alveus-dock/issues/2).
+
 - [ ] Run the applet in a clean Fedora 44 KDE Plasma 6.8.x session.
 - [ ] Compare whole-shell CPU/RSS samples with Alveus Dock disabled and enabled using docs/PERFORMANCE.md.
 - [ ] Resolve all QML parser, import and runtime warnings in a live Plasma session.
@@ -26,6 +28,8 @@ Build a small, responsive KDE Plasma dock that feels more expressive than Icons-
 
 ## 0.2.0 — window and task experience
 
+Tracking: [GitHub Issue #4](https://github.com/bezeza/alveus-dock/issues/4).
+
 - [ ] Runtime-test grouped window activation, close and ungroup actions on X11 and Wayland.
 - [ ] Test chooser placement on all four panel edges and vertical panels.
 - [ ] Evaluate KDE-supported window previews on hover.
@@ -35,6 +39,8 @@ Build a small, responsive KDE Plasma dock that feels more expressive than Icons-
 **Exit criteria:** grouping, choosing, activating and closing windows works without stale delegates, wrong-window activation or excessive CPU usage.
 
 ## 0.3.0 — dual-layer dock
+
+Tracking: [GitHub Issue #5](https://github.com/bezeza/alveus-dock/issues/5).
 
 - [ ] Test Single, Dual and Adaptive modes in a live Plasma panel.
 - [ ] Verify pinned launchers remain independent from running windows.

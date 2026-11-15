@@ -73,16 +73,10 @@ Item {
         return delegateRoot.taskModel.makeModelIndex(sourceIndex);
     }
 
-    // Match a pinned launcher to its running task using KDE's native task roles.
-    // KDE compares launcher URLs without the query metadata, so use the same
-    // normalization as a fallback when an application service ID is missing.
-    function normalizedLauncherUrl(value) {
-        const url = String(value || "");
-        if (!url) {
-            return "";
-        }
-        const queryIndex = url.indexOf("?");
-        return queryIndex >= 0 ? url.slice(0, queryIndex) : url;
+    // KDE TaskManager::appsMatch compares AppId first and then compares the
+    // LauncherUrlWithoutIcon roles directly. Do not strip arbitrary query data.
+    function launcherUrlKey(value) {
+        return String(value || "");
     }
 
     function launcherMatchesTask(index, launcherAppId, launcherUrl) {
@@ -96,7 +90,7 @@ Item {
 
         // Match KDE TaskManager::appsMatch: try the normalized launcher URL
         // when AppIds do not match, including when both IDs are present.
-        const candidateUrl = normalizedLauncherUrl(delegateRoot.taskModel.data(
+        const candidateUrl = launcherUrlKey(delegateRoot.taskModel.data(
             index,
             TaskManager.AbstractTasksModel.LauncherUrlWithoutIcon
         ));
@@ -140,7 +134,7 @@ Item {
 
     function findRunningTaskForLauncher() {
         const launcherAppId = String(delegateRoot.model.AppId || "");
-        const launcherUrl = normalizedLauncherUrl(
+        const launcherUrl = launcherUrlKey(
             delegateRoot.model.LauncherUrlWithoutIcon || delegateRoot.model.LauncherUrl
         );
         if (!launcherAppId && !launcherUrl) {

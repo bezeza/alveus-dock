@@ -127,7 +127,7 @@ class PackageContractTests(unittest.TestCase):
 
     def test_launcher_drop_classification_prevents_file_drop_fallback(self):
         start = self.qml.find("function addDroppedLaunchers(urls)")
-        end = self.qml.find("\\n    // Panel placement", start)
+        end = self.qml.find("\n    // Panel placement", start)
         handler = self.qml[start:end]
         self.assertIn("if (launcherCount === 0)", handler)
         self.assertIn("if (launcherCount !== urls.length)", handler)

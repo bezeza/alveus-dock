@@ -364,6 +364,12 @@ class PackageContractTests(unittest.TestCase):
         self.assertIn("launcherUrl === candidateUrl", matcher)
         self.assertNotIn("return launcherAppId === candidateAppId;", matcher)
 
+        url_start = self.task_delegate.find("function launcherUrlKey(value)")
+        url_end = self.task_delegate.find("\n    }", url_start)
+        url_helper = self.task_delegate[url_start:url_end]
+        self.assertIn('return String(value || "")', url_helper)
+        self.assertNotIn("indexOf", url_helper)
+
     def test_quick_access_activates_existing_application_instead_of_relaunching(self):
         self.assertIn("function findRunningTaskForLauncher()", self.task_delegate)
         self.assertIn("TaskManager.AbstractTasksModel.AppId", self.task_delegate)

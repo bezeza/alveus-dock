@@ -2,6 +2,26 @@
 
 This file records dated engineering work. It is not a runtime error log and it is not the future roadmap.
 
+## 2026-11-15 — architecture and delivery plan
+
+### Added
+- Added docs/ARCHITECTURE.md to record current KDE TasksModel/DelegateModel boundaries and the planned bookmark, multi-instance, persistence, security, accessibility and performance architecture.
+- Added docs/TEST_PLAN.md with automated CI, live Plasma, task/window, bookmark, import/export, accessibility and performance validation matrices.
+- Extended ROADMAP with 0.8.0 content management/data portability and 0.9.0 security/accessibility/release hardening.
+- Clarified that Plasma owns panel creation and placement; Alveus Dock manages only its own applet instance content and settings.
+- Split bookmark-folder expansion into its own 0.7.0 milestone rather than mixing it into the 0.6.0 multiple-dock milestone.
+
+### Tracking
+- Issue #7: multiple applet instances and bookmark content.
+- Issue #8: per-folder expansion styles.
+- Issue #9: content editor, search, presets and data portability.
+- Issue #10: security, accessibility and release hardening.
+- Issue #11: stable 1.0.0 Fedora release.
+
+### Validation
+- Documentation and planning changes only; no runtime feature or Plasma behavior is claimed by this entry.
+- CI will validate the documentation commit. Live Plasma validation remains governed by docs/TEST_PLAN.md and the milestone issues.
+
 ## 2026-11-15 — Quick Access activation routing
 
 ### Implemented
